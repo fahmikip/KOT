@@ -33,8 +33,11 @@ Aplikasi ini **BUKAN aplikasi kepemiluan** dan **BUKAN pengganti aplikasi resmi 
 
 ```
 Product version : V1
-App version     : UNDEFINED  (belum ada build system)
+App version     : 0.1.0   (dari package.json, di-inject saat build)
 ```
+
+Phase 1 hanya application shell. `0.1.0` adalah versi pertama yang bisa dijalankan, **belum**
+mengandung fitur apa pun.
 
 ## PURPOSE
 
@@ -54,34 +57,56 @@ Pegawai yang membutuhkan alat bantu sederhana untuk pekerjaan file dan dokumen.
 
 ## TECH STACK
 
-> **STATUS: `UNDEFINED` — belum ada keputusan. Menunggu keputusan pengguna.**
+> **STATUS: `ACCEPTED` — Opsi A dipilih pengguna pada 2026-10-02 (DEC-007).**
 
-Belum ada satu pun baris kode, `package.json`, atau konfigurasi build di repository.
-Stack **tidak boleh dipilih oleh AI** (ZERO INVENTION RULE, §28). Pilihan yang dibutuhkan
-beserta konsekuensinya:
+| Bagian | Pilihan |
+|--------|---------|
+| Runtime | **Electron 44.5.1** |
+| Bahasa | **TypeScript 5.9.3** |
+| UI | **React 19.3** |
+| Routing | **react-router-dom 7** (HashRouter — DEC-021) |
+| Build | **electron-vite 5** + **Vite 7** |
+| Test | **Vitest 5** + Testing Library + jsdom (DEC-011) |
+| Lint | **ESLint 10** + typescript-eslint + eslint-plugin-react-hooks |
+| Styling | CSS biasa + CSS custom properties (DEC-024) |
+| Package manager | npm |
 
-| Opsi | Komponen | Implikasi |
-|------|----------|-----------|
-| **A** | Electron + TypeScript + React | Native file I/O, offline penuh, batch besar dengan progress mudah, distribusi installer `.exe`. Memori & footprint besar, hardening IPC wajib. |
-| **B** | Tauri + TypeScript + React | Kemampuan sama seperti A, binary dan RAM jauh lebih kecil. Membutuhkan Rust toolchain. |
-| **C** | Web app (browser + WASM) | Tanpa instalasi, tanpa dependency native. Batas memori browser, tidak bisa menulis struktur folder untuk ZIP, file 100MB+ bermasalah. |
-| **D** | Python + PySide6/Qt | Library PDF dan imaging paling matang (Pillow, pikepdf, PyMuPDF). Packaging & installer untuk distribusi ke pegawai jauh lebih sulit. |
+### Struktur
 
-**Rekomendasi teknis (bukan keputusan):** opsi **A** atau **B**.
+```
+src/
+├── main/index.ts          # main process: window, siklus hidup, keamanan
+└── renderer/
+    ├── index.html
+    └── src/
+        ├── app/           # App root + peta route
+        ├── components/    # komponen reusable
+        ├── layouts/       # shell: Header, Sidebar, Footer, AppLayout
+        ├── pages/         # Dashboard, ComingSoon, NotFound
+        ├── lib/           # routes.ts (sumber tunggal), appInfo, cn
+        ├── hooks/         # useMediaQuery
+        ├── types/         # tipe bersama
+        └── styles/        # tokens.css, global.css
+```
 
-Dasar rekomendasi ini adalah requirement yang sudah ada, bukan preferensi:
+`features/` dan `services/` **belum dibuat** — Phase 1 tidak punya logika fitur maupun IPC
+(DEC-026). `engine/` dan `preload/` muncul pada phase yang membutuhkannya.
 
-- §7 privacy: seluruh proses harus lokal, bukan SaaS.
-- §19 performance: batch 100+ file dengan progress dan UI tidak freeze → butuh proses
-  terpisah dan akses file di sisi OS.
-- §18 file safety: tidak overwrite, nama output jelas → butuh kontrol filesystem penuh.
-- §20 accessibility + §15 navigasi tetap → butuh shell desktop yang stabil.
+### Batasan versi yang harus diketahui
 
-Catatan praktis: environment build yang terdeteksi adalah **Windows**. Opsi A dipilih bila
-prioritas adalah kecepatan implementasi dan kematangan ekosistem library imaging/PDF di
-Node. Opsi B dipilih bila prioritas adalah ukuran binary dan RAM pada mesin kantor lama.
+Dua versi terbaru **sengaja tidak dipakai**:
 
-**Phase 1 tidak dapat dimulai tanpa keputusan stack ini.**
+- **TypeScript 7.x ditolak** oleh `typescript-eslint@8` (`typescript >=4.8.4 <6.1.0`).
+- **Vite 8.x ditolak** oleh `electron-vite@5` (`vite ^5 || ^6 || ^7`).
+
+Naik ke salah satunya memerlukan migrasi toolchain tersendiri, bukan upgrade versi biasa.
+
+### Yang belum ada di stack
+
+- **Belum ada preload / IPC** (DEC-023). Versi aplikasi di-inject saat build lewat `define`.
+- **Belum ada `electron-builder`** atau mekanisme installer apa pun — DEC-012 masih UNDEFINED,
+  dan menambahkan packaging berarti membuat keputusan distribusi sepihak.
+- **Belum ada library imaging/PDF** — masuk Phase 2 sesuai urutan tool.
 
 ## SUPPORTED FEATURES
 
@@ -173,13 +198,13 @@ Daftar ini menghambat pengerjaan phase berikutnya.
 
 | ID | Item | Status |
 |----|------|--------|
-| DEC-007 | **Tech stack** | UNDEFINED — wajib diputuskan sebelum Phase 1 |
+| DEC-007 | ~~Tech stack~~ | **ACCEPTED — Electron + TS + React (DEC-007)** |
 | DEC-005 | OCR engine | DEFERRED / BLOCKED |
 | DEC-006 | Bahasa UI | UNDEFINED (PROPOSED: Bahasa Indonesia) |
 | DEC-008 | Engine/library PDF compression | UNDEFINED |
 | DEC-009 | Tujuan output file (save dialog vs folder output vs ZIP hasil) | UNDEFINED |
 | DEC-010 | Policy nama file duplikat (auto-suffix / skip / tanya) | UNDEFINED |
-| DEC-011 | Testing framework | UNDEFINED (mengikuti stack) |
+| DEC-011 | ~~Testing framework~~ | **ACCEPTED — Vitest + Testing Library (DEC-011)** |
 | DEC-012 | Distribusi: installer, code signing, auto-update | UNDEFINED |
 | DEC-013 | Batas ukuran file maksimum | UNDEFINED |
 | DEC-014 | PDF → Image: page size dan DPI default | UNDEFINED |
@@ -187,7 +212,11 @@ Daftar ini menghambat pengerjaan phase berikutnya.
 | DEC-016 | ZIP Creator: file saja atau folder penuh | UNDEFINED (spesifikasi ambigu) |
 | DEC-017 | QR: dukungan SVG | CONDITIONAL (bergantung library) |
 | DEC-018 | Persistensi preferences (folder terakhir, dan lain-lain) | UNDEFINED |
-| DEC-019 | Inisialisasi git repository | UNDEFINED |
+| DEC-019 | ~~Inisialisasi git repository~~ | **ACCEPTED** |
 | DEC-020 | Nama folder project (`KOT`) | PROPOSED |
+
+Sudah diputuskan pada Phase 1 dan tidak lagi menghambat: DEC-021 (HashRouter), DEC-022
+(design tokens), DEC-023 (tanpa preload/IPC), DEC-024 (CSS biasa), DEC-025 (registry route),
+DEC-026 (folder `features/` dan `services/` belum dibuat).
 
 Rincian dan alasan: `DECISIONS.md`.

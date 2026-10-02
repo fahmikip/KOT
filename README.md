@@ -11,15 +11,34 @@ khususnya pekerjaan yang terkait dengan **foto, PDF, dokumen, dan file**.
 ## Status Project
 
 ```
-FASE     : Fondasi / dokumentasi
-KODE     : 0 baris
-STACK    : BELUM DIPILIH  (menunggu keputusan pengguna)
-TEST     : belum ada
-BUILD    : belum ada
+FASE     : Phase 1 — Fondasi & Application Shell  (SELESAI)
+STACK    : Electron 44 + TypeScript 5.9 + React 19  (DEC-007, Opsi A)
+TEST     : 82 test lulus (Vitest + Testing Library)
+BUILD    : out/ — bisa dijalankan
+FITUR    : 0 dari 13 — semua masih Coming Soon
 ```
 
-**Project belum dapat dijalankan.** Repository ini saat ini hanya berisi dokumentasi
-fondasi. Detail di `SOURCE_OF_TRUTH.md`.
+**Aplikasi bisa dijalankan, tetapi belum memproses file apa pun.** Yang sudah ada adalah
+fondasi: window aplikasi, navigasi, routing, design system, dan test. Seluruh 13 tool
+menampilkan halaman "Coming Soon" yang jujur — tidak ada mock, tidak ada angka rekaan.
+
+Detail di `SOURCE_OF_TRUTH.md` dan `CHANGELOG.md`.
+
+## Menjalankan
+
+Prasyarat: Node.js 20+ dan npm.
+
+```bash
+npm install          # pasang dependency
+npm run dev          # mode pengembangan (hot reload)
+npm start            # jalankan hasil build produksi
+npm test             # 82 test
+npm run verify       # lint + typecheck + test + build
+```
+
+Build produksi menghasilkan folder `out/`. Perintah `npm run build` mencetak peringatan
+`preload config is missing` — **ini diharapkan**, aplikasi Phase 1 tidak memakai preload
+(DEC-023).
 
 ## Prinsip
 
@@ -68,24 +87,23 @@ Rincian lengkap di `FEATURES.md`.
 ## Arsitektur Ringkas
 
 ```
-SHELL / NAVIGATION
+SHELL / NAVIGATION     ← SUDAH ADA (Phase 1)
       ↓
-UI LAYER          — 5 langkah: Select Files → Options → Preview → Processing → Result
+UI LAYER (5 langkah)   ← belum ada
       ↓
-PROCESSING ENGINE — satu modul per tool, tanpa coupling ke UI
+PROCESSING ENGINE      ← belum ada
       ↓
-NATIVE LAYER      — imaging codec, PDF parser, zip, filesystem
+NATIVE LAYER           ← belum ada
 ```
 
-Bentuk konkret (IPC, struktur folder, library) **menunggu keputusan tech stack (DEC-007)**.
+Phase 1 hanya mengisi lapisan pertama. Struktur folder riil ada di `ARCHITECTURE.md` §3.
 
 ## Yang Belum Diputuskan
 
-Project **terblokir** pada beberapa keputusan. Ringkas:
+Phase 1 **tidak lagi terblokir**. Keputusan yang tersisa menyangkut fitur, bukan fondasi:
 
 | ID | Item |
 |----|------|
-| DEC-007 | **Tech stack** — blocker utama |
 | DEC-008 | Engine kompresi PDF (Ghostscript? render ulang? lisensi AGPL?) |
 | DEC-009 | Ke mana file output ditulis |
 | DEC-010 | Policy nama file duplikat |
@@ -95,8 +113,8 @@ Project **terblokir** pada beberapa keputusan. Ringkas:
 | DEC-015 | Default Image → PDF (page size) |
 | DEC-016 | ZIP: file saja atau folder |
 | DEC-018 | Menyimpan preferences atau tidak |
-| DEC-019 | Inisialisasi git repository |
 
+Sudah diputuskan: DEC-007 (stack), DEC-011 (testing), DEC-019 (git), dan DEC-021 – DEC-026.
 Rincian dan opsi lengkap di `DECISIONS.md`.
 
 ## Environment Developers
@@ -111,8 +129,8 @@ Python  : 3.12.10
 Git     : 2.55.0
 ```
 
-> Environment di atas **hanya informasi**, bukan keputusan stack. Belum ada toolchain yang
-> dipilih untuk project ini.
+> Environment di atas **hanya informasi**. Toolchain yang dipakai project: Node + npm,
+> dengan Electron 44, TypeScript 5.9, React 19, electron-vite 5, Vitest 5, ESLint 10.
 
 ## Kontribusi
 

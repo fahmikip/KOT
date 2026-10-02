@@ -36,11 +36,11 @@ Status yang dipakai:
 | DEC-004 | Larangan fitur: akun, telemetry, iklan, subscription | ACCEPTED |
 | DEC-005 | OCR ditunda sampai engine diputuskan | DEFERRED |
 | DEC-006 | Bahasa UI | PROPOSED |
-| DEC-007 | **Tech stack** | **UNDEFINED — blocker** |
+| DEC-007 | **Tech stack: Electron + TypeScript + React** | **ACCEPTED** |
 | DEC-008 | Engine kompresi PDF | UNDEFINED |
 | DEC-009 | Tujuan output file | UNDEFINED |
 | DEC-010 | Policy nama file duplikat | UNDEFINED |
-| DEC-011 | Testing framework | UNDEFINED |
+| DEC-011 | **Testing framework: Vitest + Testing Library** | **ACCEPTED** |
 | DEC-012 | Distribusi & installer | UNDEFINED |
 | DEC-013 | Batas ukuran file maksimum | UNDEFINED |
 | DEC-014 | PDF → Image: default DPI & page size | UNDEFINED |
@@ -48,8 +48,14 @@ Status yang dipakai:
 | DEC-016 | ZIP Creator: file vs folder | UNDEFINED |
 | DEC-017 | QR: dukungan SVG | CONDITIONAL |
 | DEC-018 | Persistensi preferences | UNDEFINED |
-| DEC-019 | Git repository & branching | UNDEFINED |
+| DEC-019 | **Inisialisasi git repository** | **ACCEPTED** |
 | DEC-020 | Nama folder project | PROPOSED |
+| DEC-021 | Routing memakai HashRouter | ACCEPTED (Phase 1) |
+| DEC-022 | Design tokens & palet warna | ACCEPTED (Phase 1) |
+| DEC-023 | Tidak ada preload / IPC di Phase 1 | ACCEPTED (Phase 1) |
+| DEC-024 | Styling: CSS biasa + token | ACCEPTED (Phase 1) |
+| DEC-025 | Registry route sebagai sumber tunggal | ACCEPTED (Phase 1) |
+| DEC-026 | Folder features/ dan services/ belum dibuat | ACCEPTED (Phase 1) |
 
 ---
 
@@ -144,15 +150,38 @@ EN.
 
 ## DEC-007
 
-**Tanggal:** 2026-10-02
-**Keputusan:** `UNDEFINED` — **tech stack belum dipilih.**
-**Alasan:** Repository kosong. Tidak ada `package.json`, tidak ada konfigurasi, tidak ada
-satu baris kode. ZERO INVENTION RULE (§28) melarang AI memilih stack tanpa keputusan.
-**Alternatif:** Electron, Tauri, Web app, Python desktop — lihat tabel di `SOURCE_OF_TRUTH.md`.
-**Dampak:** **Memblokir seluruh Phase 1.** Tidak ada folder, konfigurasi, atau kode yang
-boleh dibuat sebelum stack diputuskan, karena struktur folder, test framework, IPC, dan
-library semuanya bergantung padanya.
-**Status:** UNDEFINED — menunggu keputusan pengguna
+**Tanggal:** 2026-10-02 (dipilih 2026-10-02, diterapkan di Phase 1)
+**Keputusan:** **Opsi A — Electron 44 + TypeScript + React 19.**
+Build tool `electron-vite` 5, bundler Vite 7, router `react-router-dom` 7,
+test runner Vitest 5 + Testing Library + jsdom.
+
+Matriks versi yang dipakai, dan alasannya:
+
+| Paket | Versi | Alasan |
+|-------|--------|--------|
+| electron | 44.5.1 | Versi stabil terkini saat keputusan diambil |
+| electron-vite | 5.0.0 | Build tool standar untuk Electron + Vite |
+| vite | **7.3.6** | `electron-vite@5` mensyaratkan `vite ^5 \|\| ^6 \|\| ^7`. **Vite 8 tidak kompatibel.** |
+| @vitejs/plugin-react | **5.2.0** | `@vitejs/plugin-react@6` mensyaratkan `vite ^8`. V5 mendukung Vite 7. |
+| typescript | **5.9.3** | `typescript-eslint@8` mensyaratkan `typescript >=4.8.4 <6.1.0`. **TypeScript 7 tidak kompatibel.** |
+| react / react-dom | 19.3.0 | Ringkas, current |
+| react-router-dom | 7.18.4 | Routing deklaratif, mendukung nested layout |
+| vitest | 5.0.3 | Mendukung Vite 7 |
+| eslint | 10.11.0 | supported oleh typescript-eslint dan eslint-plugin-react-hooks |
+
+**Alasan:** Opsi A dipilih pengguna atas rekomendasi teknis (local-first §7, batch 100+
+file tanpa freeze §19, kontrol filesystem penuh §18).
+
+**Alternatif:** Tauri (DIPILIH TIDAK), Web app (DIPILIH TIDAK), Python + Qt (DIPILIH TIDAK).
+
+**Catatan versi penting:** dua versi terbaru sengaja **tidak** dipakai karena tidak kompatibel:
+TypeScript 7.0.2 ditolak oleh `typescript-eslint`, dan Vite 8.3.2 ditolak oleh `electron-vite@5`.
+Naik ke salah satu dari keduanya memerlukan migrasi toolchain tersendiri.
+
+**Dampak:** Struktur project memakai `src/main` + `src/renderer` (bukan `src/app` di root
+sepertiPhase 1 §4, karena renderer Electron harus berada di dalam renderer process). Test
+framework dan konvensi build mengikuti stack ini.
+**Status:** ACCEPTED
 
 ---
 
@@ -232,12 +261,18 @@ kendali atasnya belum diputuskan.
 ## DEC-011
 
 **Tanggal:** 2026-10-02
-**Keputusan:** `UNDEFINED` — testing framework belum dipilih.
-**Alasan:** Mengikuti stack (DEC-007). Dampak minimal — test yang ditulis akan mengikuti
-framework yang dipilih, bukan sebaliknya.
-**Alternatif:** Vitest/Jest (Node), pytest (Python), atau kombinasi — mengikuti stack.
-**Dampak:** Struktur `tests/` di `ARCHITECTURE.md` sudah disiapkan independen dari framework.
-**Status:** UNDEFINED — menunggu keputusan DEC-007
+**Keputusan:** Testing framework = **Vitest 5** (test runner) + **@testing-library/react 16**
+(render & query) + **jsdom 30** (DOM environment) + **@testing-library/jest-dom** (assertion).
+Unit test dan integration test memakai runner yang sama; tidak ada framework kedua.
+**Alasan:** Mengikuti DEC-007. Vitest berjalan di atas pipeline Vite yang sama dengan build,
+sehingga tidak ada konfigurasi transform terpisah. Testing Library menguji perilaku yang
+penting bagi user (nama yang bisa dibaca, role, interaksi keyboard), bukan implementasi internal.
+**Alternatif:** Jest (transform terpisah, lambat, tidak perlu karena sudah di Vite),
+Playwright E2E (menambah browser download dan waktu setup; belum diperlukan di Phase 1),
+React Native Testing Library (tidak relevan).
+**Dampak:** 82 test aktif pada Phase 1. Struktur `tests/unit` dan `tests/integration`
+sesuai ARCHITECTURE.md. E2E browser **belum** ada — lihat FUTURE_FEATURES.md FF-021.
+**Status:** ACCEPTED
 
 ---
 
@@ -266,9 +301,12 @@ framework yang dipilih, bukan sebaliknya.
 **Keputusan:** `UNDEFINED` — batas ukuran file dan jumlah file belum ditetapkan.
 **Alasan:** §18 mewajibkan "menangani ukuran file besar" tetapi tidak memberi angka.
 **Catatan:** Batas ini **berbeda** antar stack. Web app akan mentok di memori tab; desktop
-bisa jauh lebih tinggi. Tidak masuk akal ditetapkan sebelum DEC-007.
+bisa jauh lebih tinggi. DEC-007 sudah ACCEPTED (Electron), jadi hambat technologicalnya
+sudah hilang — yang tersisa adalah angka kebijakan, bukan keterbatasan toolchain.
 **Dampak:** Perlu juga strategi *streaming* vs *load-all-in-memory* untuk setiap tool.
-**Status:** UNDEFINED — menunggu keputusan DEC-007
+Electron: renderer tidak boleh memegang file besar di memori; pemrosesan terjadi di main/
+engine (§19).
+**Status:** UNDEFINED — perlu angka; sekarang bisa diputuskan di Phase 2
 
 ---
 
@@ -357,15 +395,13 @@ mengandung isi file, dan tidak boleh dikirim ke mana pun.
 ## DEC-019
 
 **Tanggal:** 2026-10-02
-**Keputusan:** `UNDEFINED` — repository belum diinisialisasi sebagai git.
-**Alasan:** Direktori kerja bukan git repository saat dokumen ini dibuat. Tidak ada
-instruksi untuk melakukan `git init`.
-**Alternatif:** (a) `git init` sekarang, (b) tunggu sampai ada instruksi eksplisit.
-**Catatan:** §4 dan §5 mengasumsikan ada version control untuk review perubahan per phase.
-Tanpa git, tidak ada cara melacak perubahan atau rollback.
-**Rekomendasi teknis:** `git init` dengan branch `main`, commit dokumen fondasi sebagai
-commit pertama. Tapi inisialisasi VCS adalah keputusan yang layak dikonfirmasi.
-**Status:** UNDEFINED — menunggu keputusan pengguna
+**Keputusan:** Repository **diinisialisasi sebagai git**, branch `main`, remote
+`https://github.com/fahmikip/KOT`.
+**Alasan:** Pengguna memberi instruksi eksplisit "commit dan push ke github". Commit pertama
+`d30a2ac` berisi dokumen fondasi.
+**Alternatif:** (b) tunggu instruksi eksplisit — tidak lagi berlaku karena instruksi diberikan.
+**Dampak:** Ada riwayat perubahan dan rollback per phase. `.gitignore` dibuat bersamaan.
+**Status:** ACCEPTED
 
 ---
 
@@ -378,3 +414,131 @@ commit pertama. Tapi inisialisasi VCS adalah keputusan yang layak dikonfirmasi.
 **Dampak:** Nama folder tidak memengaruhi aplikasi, hanya repository. Tidak diubah tanpa
 persetujuan.
 **Status:** PROPOSED — perlu konfirmasi
+
+---
+
+# KEPUTUSAN PHASE 1
+
+Entri di bawah dibuat saat Phase 1 (Project Foundation & Application Shell) dikerjakan.
+Semua pertains pada implementasi shell; tidak mengubah scope produk.
+
+## DEC-021
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Routing memakai **HashRouter** (`react-router-dom`), bukan BrowserRouter.
+**Alasan:** Pada build produksi, renderer dimuat lewat `loadFile()` dengan skema `file://`.
+BrowserRouter tidak dapat bekerja pada skema tersebut karena history API butuh origin HTTP.
+HashRouter bekerja tanpa konfigurasi server tambahan — pilihan paling sederhana sesuai
+Phase 1 §13.
+**Alternatif:**
+- BrowserRouter + custom protocol (`app://`) — lebih bersih secara teoritis, tetapi menambah
+  registrasi protocol di main process tanpa manfaat nyata di Phase 1.
+- Hash manual parsing — menduplikasi fungsi yang sudah ada di router.
+**Dampak:** URL tampil sebagai `file:///.../index.html#/pdf/merge`. Tidak masalah untuk aplikasi
+desktop. Tidak perlu dialog router.
+**Status:** ACCEPTED
+
+## DEC-022
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Palet warna, skala spacing, skala radius, dan skala typography ditetapkan
+dengan nilai konkret pertama kali, disimpan di `src/renderer/src/styles/tokens.css`.
+**Alasan:** Phase 1 §10 mengizinkan nilai sementara bila implementasi membutuhkan, dengan
+syarat proposal dicatat di sini. Shell memang membutuhkan nilai konkret agar bisa dinilai.
+**Nilai yang ditetapkan:**
+
+| Token | Nilai | Catatan |
+|-------|-------|---------|
+| background | `#f4f6f8` | Abu muda dingin |
+| surface | `#ffffff` | |
+| surface-muted | `#eaeef2` | |
+| border | `#d3dae2` | |
+| border-strong | `#b3bfcc` | Untuk kontrol formulir |
+| text-primary | `#16191d` | |
+| text-secondary | `#4f5b6a` | |
+| primary | `#1f5f9e` | Biru tenang, satu-satunya warna aksen |
+| primary-hover | `#17497a` | |
+| success | `#1a6b45` | |
+| warning | `#7d5200` | |
+| danger | `#a8261d` | |
+
+Aturan yang berlaku bersama palet ini:
+
+- Tanpa gradient, tanpa neon, satu warna aksen saja (§14).
+- Font memakai system font stack. **Tidak ada webfont** — tidak ada permintaan jaringan,
+  konsisten dengan DEC-001.
+- Semua pasangan teks/latar Designed memenuhi WCAG AA (rasio kontras ≥ 4.5:1 untuk teks normal).
+- Spacing scale: 4, 8, 12, 16, 24, 32, 48, 64 px.
+- Radius dibatasi tiga nilai: 4, 8, 12 px.
+- Dark mode **tidak** dibuat (Phase 1 §21 melarang; ada di FUTURE_FEATURES.md).
+
+**Alternatif:** Palet netral murni tanpa warna aksen (terlalu datar untuk state fokus);
+biru corporate lebih terang (kontras teks putih menurun).
+**Dampak:** Warna di seluruh aplikasi wajib diambil dari token. Nilai Literal di komponen
+menyimpang dari token dianggap pelanggaran.
+**Status:** ACCEPTED — dapat direvisi bila perlu
+
+## DEC-023
+
+**Tanggal:** 2026-10-02
+**Keputusan:** **Tidak ada preload script dan tidak ada IPC pada Phase 1.**
+**Alasan:** Tidak ada satu pun operasi yang perlu diekspos ke renderer. Satu-satunya data yang
+ dibutuhkan renderer — versi aplikasi — di-inject saat build melalui `define`, sehingga tidak
+memerlukan bridge.
+**Alternatif:** Membuat preload dengan `contextBridge` sejak awal "siap dipakai nanti" —
+ditolak karena itu kode tanpa consumer (melawan §29).
+**Dampak:** `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`. Electron
+mencetak peringatan "preload config is missing" saat build — **ini diharapkan**, bukan error.
+Preload baru dibuat pada phase yang benar-benar memproses file.
+**Status:** ACCEPTED
+
+## DEC-024
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Styling memakai **CSS biasa** dengan custom properties. Tidak memakai Tailwind,
+CSS-in-JS, maupun CSS Modules.
+**Alasan:** Volume styling Phase 1 kecil dan statis. CSS biasa + token memenuhi kebutuhan tanpa
+dependency tambahan dan tanpa build step tambahan. Token sudah terpisah di `tokens.css`, sehingga
+pindah ke pendekatan lain tetap mudah bila-required.
+**Alternatif:**
+- Tailwind — produktivitas bagus, tapi menambah dependency dan konvensi utilitas yang
+ perlu dipelajari.
+- CSS Modules — scoping otomatis, tapi menambah nama file dan kompleksi routing tanpa
+manfaat yang jelas di Phase 1.
+- CSS-in-JS — runtime cost, tidak perlu.
+**Dampak:** Satu file CSS per komponen, BEM-lite (`block__element--modifier`). Konvensi ini
+wajib dijaga agar konsisten.
+**Status:** ACCEPTED
+
+## DEC-025
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Seluruh definisi tool, path, label, dan grup navigasi berada di **satu berkas**:
+`src/renderer/src/lib/routes.ts`. Sidebar, Dashboard, dan router ketiganya mengimpor dari sana.
+**Alasan:** Mencegah navigasi dan routing berbeda — sumber kegagalan yang mudah terjadi.
+**Alternatif:** Menulis route thrice di tiga tempat (router, sidebar, dashboard) — ditolak,
+mengganggu aturan no-duplication.
+**Dampak:** Menambah tool = menambah satu entri di `routes.ts`. Test `routes.test.ts` menjaga
+path tetap unik dan lengkap.
+
+### Konflik yang ditemukan dan diselesaikan
+
+`ARCHITECTURE.md` §9 mendaftarkan route QR Generator sebagai `utility/qr` dan Date Calculator
+sebagai `utility/date-calculator`. Phase 1 §13 listing route `utility/qr` dan `utility/date`.
+
+**Penyelesaian:** yang dipakai `utility/date`, sesuai Phase 1 §13, dan `ARCHITECTURE.md` §9
+sudah dikoreksi agar sama. `/utility/date` juga lebih konsisten dengan label tool
+"Date Calculator" tanpa mengulang kata "calculator" di URL.
+
+## DEC-026
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Folder `features/` dan `services/` **tidak** dibuat pada Phase 1.
+**Alasan:** Phase 1 §4 memerintahkan "Jangan membuat folder jika stack atau arsitektur yang
+dipilih tidak membutuhkannya". Phase 1 tidak punya logika fitur apa pun dan tidak punya
+service (belum ada IPC atau engine), sehingga kedua folder tersebut akan kosong.
+**Alternatif:** Membuat kedua folder sekarang untuk "men.prepare" — ditolak karena
+folder kosong tanpa isi adalah ceremony.
+**Dampak:** `features/<tool>/` dibuat satu per satu pada phase implementasi tool tersebut.
+`services/` muncul saat IPC/engine pertama ada. Struktur final ada di `ARCHITECTURE.md`.
+**Status:** ACCEPTED

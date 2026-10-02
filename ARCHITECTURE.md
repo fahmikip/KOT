@@ -1,9 +1,8 @@
 # ARCHITECTURE — KPU Office Tools
 
-> **STATUS: LOGICAL / STACK-AGNOSTIC.**
-> Dokumen ini menjelaskan batas modul, aliran data, dan kontrak — bukan pilihan teknologi.
-> Struktur folder konkret dan mekanisme IPC **menunggu keputusan tech stack (DEC-007)**.
-> Tidak ada kode yang ada di repository saat dokumen ini dibuat.
+> **STATUS: Phase 1 selesai.** Struktur folder di bawah adalah struktur **sesuai nyatanya**,
+> bukan usulan. Lapisan `engine/` dan `preload/` **belum ada** — keduanya muncul pada phase
+> yang benar-benar membutuhkan. Lihat DEC-023 dan DEC-026.
 
 ---
 
@@ -57,54 +56,90 @@
 └──────────────────────────────────────────────────────────┘
 ```
 
-> Bentuk implementasinya (IPC Electron / Rust command / subprocess / worker) bergantung
-> pada DEC-007.
+> **Realisasi Phase 1:** dua lapisan teratas (shell + navigasi) sudah ada. Empat lapisan di
+> bawahnya — UI layer per tool, processing engine, dan native layer — **belum ada**, karena
+> Phase 1 tidak memproses file. Kontrak IPC di bawah adalah rancangan untuk phase engine.
 
-## 3. Struktur Folder (PROPOSED — menunggu DEC-007)
+### Kontrak IPC (rancangan, belum diimplementasikan)
 
-Tidak ada struktur folder yang sudah ditetapkan; repository kosong. Berikut bentuk yang
-**disarankan** dan perlu dikonfirmasi setelah stack diputuskan.
+Bentuk IPC sudah diputuskan: **typed request/response + progress events** lewat Electron
+`contextBridge`. Prinsip yang sudah ditegakkan di Phase 1, dan wajib tetap berlaku:
+
+| Prinsip | Nilai di Phase 1 |
+|---------|------------------|
+| `contextIsolation` | `true` |
+| `nodeIntegration` | `false` |
+| `sandbox` | `true` |
+| preload script | **tidak ada** (DEC-023) |
+| Channel yang di-expose | **nol** |
+| Renderer menyentuh fs langsung | tidak bisa, dan tidak dicoba |
+
+Channel yang akan ada saat phase engine (nama final belum ditetapkan):
+
+```
+file:read-list        file:write          file:destination   file:validate
+tool:<toolId>:run     tool:<toolId>:cancel
+engine:progress       engine:progress:detail
+```
+
+## 3. Struktur Folder (nyata — hasil Phase 1)
 
 ```
 KOT/
-├── docs/                     # dokumentasi (jika dipisah dari root)
 ├── src/
-│   ├── main/                 # shell / main process
-│   ├── renderer/             # UI
-│   │   ├── app/              # shell, routing, layout, navigasi
-│   │   ├── components/       # komponen generik (Stepper, Dropzone, ProgressBar)
-│   │   ├── features/         # satu folder per tool
-│   │   └── shared/           # tipe & util UI yang dipakai >1 tool
-│   ├── engine/               # processing engine (tanpa import UI sama sekali)
-│   │   ├── modules/
-│   │   │   ├── image/
-│   │   │   ├── pdf/
-│   │   │   ├── convert/
-│   │   │   ├── file/
-│   │   │   └── utility/
-│   │   ├── shared/           # error, path resolver, progress, logging
-│   │   └── contracts/        # tipe kontrak antar boundary
-│   └── types/                # tipe yang dipakai engine dan UI
+│   ├── main/
+│   │   └── index.ts              # main process: window, siklus hidup, keamanan
+│   └── renderer/
+│       ├── index.html            # CSP meta, #root
+│       └── src/
+│           ├── main.tsx          # entry renderer
+│           ├── app/
+│           │   ├── App.tsx       # ErrorBoundary + HashRouter + Suspense
+│           │   └── router.tsx    # peta route (generate dari registry)
+│           ├── components/       # Button, Card, Badge, Alert, Loading,
+│           │                     # ErrorBoundary, FileDropZone
+│           ├── layouts/          # AppLayout, Header, Sidebar, Footer
+│           ├── pages/            # Dashboard, ComingSoon, NotFound
+│           ├── lib/
+│           │   ├── routes.ts     # SUMBER TUNGGAL definisi tool & navigasi
+│           │   ├── appInfo.ts    # nama, versi, disclaimer
+│           │   └── cn.ts
+│           ├── hooks/            # useMediaQuery, useIsDesktop
+│           ├── types/            # tools.ts, globals.d.ts
+│           └── styles/           # tokens.css, global.css
 ├── tests/
-│   ├── unit/
-│   ├── integration/
-│   └── fixtures/             # file contoh: valid, corrupt, zero-byte, protected
-└── scripts/
+│   ├── setup.ts                  # jest-dom, cleanup, stub matchMedia
+│   ├── helpers/renderApp.tsx     # render dengan MemoryRouter
+│   ├── unit/                     # registry, komponen, error handling
+│   └── integration/              # navigasi, shell, responsif, a11y
+├── electron.vite.config.ts
+├── vitest.config.ts
+├── eslint.config.mjs
+├── tsconfig.json / .node.json / .web.json
+└── package.json
 ```
 
-Aturan yang berlakuJHIDUP nilai ini:
+Folder yang **sengaja belum ada** dan alasannya:
+
+| Folder | Alasan belum ada |
+|--------|------------------|
+| `src/preload/` | Tidak ada IPC di Phase 1 (DEC-023). Tidak ada yang perlu diekspos. |
+| `src/engine/` | Belum ada tool yang memproses file. slated untuk Phase 2. |
+| `src/renderer/src/features/` | Phase 1 tidak punya logika fitur. Dibuat per-tool (§4 Phase 1, DEC-026) |
+| `src/renderer/src/services/` | Belum ada service; muncul saat IPC/engine pertama ada |
+| `docs/` | Dokumentasi tetap di root repository |
+
+Aturan yang berlaku:
 
 - `engine/` **dilarang** meng-import dari `renderer/` atau `main/`.
-- `features/<tool>/` hanya boleh memakai komponen generik dan `shared/`.
-- `tests/fixtures/` berisi file yang sengaja rusak/terproteksi untuk menguji error path.
-
-> `UNDEFINED`: nama folder, konvensi penamaan, modul bundler, dan lokasi test akan
-> mengikuti toolchain yang dipilih.
+- Tidak ada folder kosong. Struktur mengikuti tanggung jawab, bukan upacara (Phase 1 §4).
+- Konvensi CSS: BEM-lite (`block__element--modifier`), satu file CSS per komponen.
+- Alias `@/*` → `src/renderer/src/*` (renderer tidak boleh mengimpor `src/main`).
 
 ## 4. Kontrak Modul (Module Contract)
 
-Setiap modul engine mengikuti bentuk ini. Bentuk ini **belum final** sampai stack diputuskan,
-tetapi batas tanggung jawabnya sudah tetap.
+Setiap modul engine mengikuti bentuk ini. Modul ini **belum ada** — kontrak ini diuji
+bersama saat phase engine pertama. Batas tanggung jawabnya sudah tetap.
 
 ```
 Input:
@@ -287,15 +322,28 @@ Dashboard
     └── Date Calculator
 ```
 
-Route ID yang perlu tersedia (nama final mengikuti konvensi stack):
+Daftar route yang tersedia. **Ini bukan usulan — ini route yang sudah diimplementasikan**
+di Phase 1 dan diuji di `tests/unit/routes.test.ts`. Sumber tunggalnya
+`src/renderer/src/lib/routes.ts` (DEC-025).
 
 ```
-image/compress        image/resize        image/convert
-pdf/compress          pdf/merge           pdf/split         pdf/rotate
-convert/image-to-pdf  convert/pdf-to-image
-file/batch-rename     file/zip
-utility/qr            utility/date-calculator
+/                          Dashboard
+/image/compress            /pdf/compress
+/image/resize              /pdf/merge
+/image/convert             /pdf/split
+/convert/image-to-pdf      /pdf/rotate
+/convert/pdf-to-image      /file/batch-rename
+/utility/qr                /file/zip
+/utility/date
+*                          NotFound
 ```
+
+Seluruhnya memakai HashRouter (DEC-021), jadi URL sebenarnya berbentuk
+`file:///.../index.html#/pdf/merge`.
+
+Perubahan dari versi dokumen sebelumnya: Date Calculator tadinya terdaftar sebagai
+`utility/date-calculator`, kini `utility/date` mengikuti Phase 1 §13 dan sudah dikoreksi
+di sini (DEC-025).
 
 Tidak ada route lain. Menu lain menunggu persetujuan.
 
@@ -319,13 +367,32 @@ Tidak ada route lain. Menu lain menunggu persetujuan.
 - Semua library pemroses file harus dapat berjalan sepenuhnya lokal, tanpa koneksi network
   saat runtime.
 
-## 12. Yang Belum Defined dalam Arsitektur
+## 12. Yang Sudah Defined vs Belum Defined
 
-- mekanisme IPC konkret (menunggu DEC-007)
-- struktur folder final (menunggu DEC-007)
+### Sudah defined (Phase 1)
+
+- Struktur folder riil — lihat §3
+- Bentuk & nama route — lihat §9
+- Routing: HashRouter (DEC-021)
+- Bentuk IPC atas: typed request/response + progress events, `contextBridge`
+- Batas folder: `engine/` tidak boleh import UI; `features/` tidak boleh import `engine/`
+- Design tokens: palet warna, spacing, radius, typography (DEC-022)
+- Konvensi CSS: BEM-lite, satu file CSS per komponen (DEC-024)
+- Sumber tunggal navigasi: `lib/routes.ts` (DEC-025)
+- Postur keamanan window: `sandbox: true`, `contextIsolation: true`, `nodeIntegration: false`,
+  `setWindowOpenHandler` yang menolak navigasi keluar
+
+### Belum defined
+
+- ~~mekanisme IPC konkret~~ → sudah diputuskan bentuknya, **channel & payload belum final**
+- ~~struktur folder final~~ → sudah ada untuk Phase 1; `features/` & `services/` menyusul
 - lokasi & format developer log
-- mekanisme cancellation konkret
+- mekanisme cancellation konkret (`AbortSignal` via IPC)
 - timeout per file
 - strategi worker pool / queue
 - strategi preview untuk PDF (render halaman: perlu library, belum diputuskan)
 - persistensi preferences (DEC-018)
+- choice engine: PDF (DEC-008) dan imaging
+- struktur `features/<tool>/` per tool — menunggu implementasi tool pertama
+- decrypt PDF terenkripsi (belum ada di spesifikasi produk)
+- library archive/encryption untuk ZIP (belum ada di spesifikasi produk)

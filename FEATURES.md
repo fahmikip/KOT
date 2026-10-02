@@ -7,35 +7,71 @@ Status legend:
 
 | Status | Arti |
 |--------|------|
-| `SPECIFIED` | Ada di spesifikasi, siap diimplementasikan setelah stack diputuskan |
+| `SPECIFIED` | Ada di spesifikasi, siap diimplementasikan |
 | `PARTIAL` | Ada di spesifikasi, tetapi sebagian detailnya belum ditentukan |
 | `DEFERRED` | Ditunda; tidak diimplementasikan di V1 sampai ada keputusan |
 | `BLOCKED` | Tidak bisa dikerjakan karena ketergantungan yang belum diputuskan |
 
-> **Tidak ada satu pun fitur yang berstatus `IMPLEMENTED`.** Repository kosong.
+> **Tidak ada satu pun fitur yang berstatus `IMPLEMENTED`.**
+>
+> Phase 1 sudah membangun **shell tempat semua fitur ini akan hidup**: window aplikasi,
+> navigasi, routing, design system, dan responsif layout. Jadi dari sudut pandang kode,
+> setiap tool sudah punya *tempat* dan *tempat masuk* di navigasi — tetapi belum punya
+> fungsi apa pun. Halaman yang tampil untuk setiap tool adalah "Coming Soon" yang jujur.
+> Yang diimplementasikan Phase 1 adalah `FileDropZone` dan komponen UI dasar, bukan fitur.
+
+### Prasyarat yang sudah satisfied di Phase 1
+
+| Prasyarat | Status |
+|-----------|--------|
+| Tech stack (DEC-007) | ACCEPTED |
+| Testing framework (DEC-011) | ACCEPTED |
+| Struktur folder | Ada (`ARCHITECTURE.md` §3) |
+| Routing untuk 13 tool | Ada, semua dapat dinavigasi |
+| Design tokens & komponen dasar | Ada (DEC-022) |
+
+### Prasyarat yang masih hilang
+
+Tidak ada satu pun tool yang bisa dikerjakan sebelum keputusan ini tersedia:
+
+| ID | Yang dibutuhkan | Tool yang tertahan |
+|----|-----------------|---------------------|
+| DEC-008 | Engine kompresi PDF | PDF Compressor |
+| DEC-009 | Tujuan output file | Semua tool |
+| DEC-010 | Policy nama file duplikat | Semua tool yang menulis file |
+| DEC-013 | Batas ukuran file | Semua tool |
+| DEC-014 | Default DPI & page size | PDF → Image |
+| DEC-015 | Default page size | Image → PDF |
+| DEC-016 | ZIP: file atau folder | ZIP Creator |
+
+Phase 2 perlu memutuskan DEC-009 dan DEC-013 lebih dulu, karena keduanya memengaruhi
+kontrak `OutputTarget` dan validasi input — bukan hanya UI.
 
 ---
 
 ## Ringkasan Modul
 
-| # | Modul | Fitur | Status | Estimasi |
-|---|-------|-------|--------|----------|
-| 1 | Image Tools | Image Compressor | SPECIFIED | S |
-| 2 | Image Tools | Image Resizer | SPECIFIED | S |
-| 3 | Image Tools | Image Converter | SPECIFIED | S |
-| 4 | PDF Tools | PDF Compressor | PARTIAL | L |
-| 5 | PDF Tools | PDF Merge | SPECIFIED | M |
-| 6 | PDF Tools | PDF Split | SPECIFIED | S |
-| 7 | PDF Tools | PDF Rotate | SPECIFIED | S |
-| 8 | Convert | Image → PDF | PARTIAL | M |
-| 9 | Convert | PDF → Image | PARTIAL | M |
-| 10 | File Tools | Batch Rename | SPECIFIED | M |
-| 11 | File Tools | ZIP Creator | PARTIAL | S |
-| 12 | Utilities | QR Generator | PARTIAL | S |
-| 13 | Utilities | Date Calculator | PARTIAL | S |
-| 14 | OCR | OCR | DEFERRED | — |
+Kolom "Kode" menunjukkan apakah ada implementasi untuk fitur tersebut.
+
+| # | Modul | Fitur | Status | Kode | Estimasi |
+|---|-------|-------|--------|------|----------|
+| 1 | Image Tools | Image Compressor | SPECIFIED | — | S |
+| 2 | Image Tools | Image Resizer | SPECIFIED | — | S |
+| 3 | Image Tools | Image Converter | SPECIFIED | — | S |
+| 4 | PDF Tools | PDF Compressor | PARTIAL | — | L |
+| 5 | PDF Tools | PDF Merge | SPECIFIED | — | M |
+| 6 | PDF Tools | PDF Split | SPECIFIED | — | S |
+| 7 | PDF Tools | PDF Rotate | SPECIFIED | — | S |
+| 8 | Convert | Image → PDF | PARTIAL | — | M |
+| 9 | Convert | PDF → Image | PARTIAL | — | M |
+| 10 | File Tools | Batch Rename | SPECIFIED | — | M |
+| 11 | File Tools | ZIP Creator | PARTIAL | — | S |
+| 12 | Utilities | QR Generator | PARTIAL | — | S |
+| 13 | Utilities | Date Calculator | PARTIAL | — | S |
+| 14 | OCR | OCR | DEFERRED | — | — |
 
 Estimasi: `S` kecil, `M` sedang, `L` besar. Ini perkiraan kasar, bukan commitment.
+Kolom "Kode" kosong untuk semua fitur: yang ada baru shell-nya, bukan logikanya.
 
 ---
 

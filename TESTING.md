@@ -1,8 +1,42 @@
 # TESTING — KPU Office Tools
 
-> **STATUS: STRATEGI SAJA — belum ada test yang bisa dijalankan.**
-> Belum ada kode, belum ada test framework (DEC-011 menunggu DEC-007).
-> Test framework TIDAK dipilih di sini karena mengikuti stack.
+> **STATUS: AKTIF.** Framework dipilih: **Vitest 5 + Testing Library + jsdom** (DEC-011).
+> Phase 1 memiliki **82 test, semuanya lulus** pada 7 file.
+>
+> Cakupan saat ini **hanya application shell** — navigasi, routing, responsif, aksesibilitas,
+> dan komponen UI. Test engine file processing belum ada karena engine-nya belum ada.
+
+---
+
+## Hasil Validasi Terakhir
+
+```
+Command                                        Hasil
+────────────────────────────────────────────────────────────────
+npx eslint .                                    PASS (0 error, 0 warning)
+npx tsc --noEmit -p tsconfig.node.json          PASS
+npx tsc --noEmit -p tsconfig.web.json           PASS
+npx vitest run                                  PASS — 7 files, 82 tests
+npm run build                                   PASS
+Electron 44.5.1 (runtime nyata)                 PASS — 0 console error
+```
+
+Pemeriksaan runtime dilakukan dengan memuat hasil build di Electron sungguhan dan mengevaluasi
+DOM: title, heading, 14 link navigasi, sidebar, footer disclaimer, versi header, token CSS
+terresolve, navigasi hash, dan route 404. **0 console error, 0 renderer crash.**
+
+### Sebaran test Phase 1
+
+| File test | Test | Cakupan |
+|-----------|------|---------|
+| `integration/navigation.test.tsx` | 23 | Dashboard, seluruh route tool, 404, sidebar, interaksi menu |
+| `unit/components.test.tsx` | 16 | Button, Badge, Card, Alert, Loading, FileDropZone |
+| `integration/accessibility.test.tsx` | 10 | Landmark, struktur heading, accessible name, focus |
+| `integration/shell.test.tsx` | 10 | Header/Sidebar/Footer, halaman Coming Soon |
+| `unit/routes.test.ts` | 9 | Registry route: path unik, group, status, urutan |
+| `integration/responsive.test.tsx` | 8 | Mobile + desktop, drawer, tabel |
+| `unit/error-handling.test.tsx` | 6 | ErrorBoundary, pesan user vs teknis, app info |
+| **Total** | **82** | **7 file** |
 
 ---
 
@@ -16,18 +50,29 @@
 | Test batch wajib | Karena §19 adalah requirement, bukan bonus |
 | Tidak ada test yang bergantung pada jaringan | Semua test harus offline (DEC-001) |
 | Test tidak boleh mengubah file asli | Semua test menulis ke temp dir |
+| Test menguji perilaku, bukan implementasi | Query lewat role & nama yang dibaca user |
 
-> `UNDEFINED`: nama test framework, lokasi file, dan konvensi penamaan — menunggu DEC-007.
+> Lokasi file & konvensi penamaan sudah diterapkan:
+> `tests/unit/*.test.ts(x)` dan `tests/integration/*.test.tsx`. Fixture `tests/fixtures/`
+> disiapkan tetapi belum berisi apa-apa karena belum ada engine.
 
 ## 2. Lokasi
 
-Struktur yang disiapkan di `ARCHITECTURE.md`:
+Struktur yang dipakai Phase 1:
 
 ```
 tests/
-├── unit/         # fungsi tunggal, tanpa I/O
-├── integration/  # engine penuh dengan file fixture
-└── fixtures/     # file contoh
+├── setup.ts                  # jest-dom, auto-cleanup, stub matchMedia
+├── helpers/renderApp.tsx     # render aplikasi dengan MemoryRouter
+├── unit/
+│   ├── routes.test.ts            9 test
+│   ├── components.test.tsx      16 test
+│   └── error-handling.test.tsx    6 test
+└── integration/
+    ├── navigation.test.tsx      23 test
+    ├── shell.test.tsx           10 test
+    ├── responsive.test.tsx       8 test
+    └── accessibility.test.tsx   10 test
 ```
 
 ## 3. Fixture yang Wajib Dibuat
@@ -318,17 +363,39 @@ batch, dan kasus error file per-item.
 | Item | Status |
 |------|--------|
 | Strategi test | DOKUMENTED |
-| Framework | UNDEFINED (DEC-011) |
-| Fixture files | BELUM ADA |
-| Test files | BELUM ADA — tidak ada kode |
-| CI | UNDEFINED |
+| Framework | **AKTIF — Vitest 5 + Testing Library + jsdom** (DEC-011) |
+| Test files | **7 file, 82 test, semua lulus** (Phase 1) |
+| Cakupan | Application shell saja: routing, navigasi, responsif, a11y, komponen |
+| Test engine / processing | **BELUM ADA** — engine-nya belum ada |
+| Fixture files | BELUM ADA — butuh tool untuk membuatnya (phase engine) |
+| E2E / browser test | BELUM ADA |
+| CI | UNDEFINED — belum ada konfigurasi CI |
+
+### Yang sudah diverifikasi otomatis di Phase 1
+
+- Seluruh 13 route terbuka dan menampilkan halaman Coming Soon yang jujur
+- Route tak dikenal → 404
+- Drawer mobile/tablet: toggle, tutup via Escape, tutup via navigasi, tutup via backdrop
+- Sidebar desktop selalu terlihat
+- Landmark & heading structure benar
+- Nama accessible pada semua kontrol interaktif
+- Visible focus state
+- ErrorBoundary: pesan user !== pesan teknis
+- Tidak ada console error di runtime Electron nyata
+
+### Yang belum bisa diverifikasi otomatis
+
+Sisa baris di §6 tetap manual, termasuk inspection visual focus state dan kontras warna.
+Yang **telah** dilakukan manual di Phase 1: verifikasi runtime Electron (0 console error,
+DOM ter-render benar, token CSS resolve, hash routing bekerja, 404 bekerja).
+Verifikasi visual pada beberapa ukuran window masih perlu dilakukan manusia.
 
 ## 9. Yang Belum Defined
 
-- nama & versi test framework (DEC-011)
-- struktur penamaan file test
+- struktur penamaan file test untuk `features/` dan `engine/` (menunggu ada isinya)
 - lokasi & format developer log yang diakses test
-- strategy untuk test batch besar (fixture di-generate saat test run vs di-commit)
+- strategi untuk test batch besar (fixture di-generate saat test run vs di-commit)
 - mock filesystem atau temp dir asli
 - threshold timeout per test
 - apakah ada CI, dan di mana
+- E2E untuk alur wizard 5 langkah (perlukan tool browser, lihat FUTURE_FEATURES.md FF-021)

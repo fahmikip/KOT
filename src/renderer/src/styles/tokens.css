@@ -1,0 +1,90 @@
+/*
+ * Design tokens — KPU Office Tools
+ *
+ * DEC-022: palet warna, skala spacing, radius, dan typography ditetapkan di Phase 1
+ * karena implementasi shell membutuhkan nilai konkret. Nilai ini PROPOSED dan dapat
+ * direvisi. Lihat DECISIONS.md.
+ *
+ * Aturan yang berlaku:
+ * - Tanpa gradient.
+ * - Satu warna aksen (primary). Warna lain hanya untuk status semantik.
+ * - Semua pasangan warna teks/latar belakang wajib memenuhi WCAG AA (4.5:1).
+ * - Font memakai system stack. Tidak ada webfont, tidak ada permintaan jaringan.
+ */
+
+:root {
+  /* ---------------------------------------------------------------- color */
+  --color-background: #f4f6f8;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eaeef2;
+  --color-border: #d3dae2;
+  --color-border-strong: #b3bfcc;
+
+  --color-text-primary: #16191d;
+  --color-text-secondary: #4f5b6a;
+  --color-text-inverse: #ffffff;
+
+  --color-primary: #1f5f9e;
+  --color-primary-hover: #17497a;
+  --color-primary-muted: #e3edf7;
+
+  --color-success: #1a6b45;
+  --color-success-muted: #e4f1ea;
+  --color-warning: #7d5200;
+  --color-warning-muted: #fbf0dc;
+  --color-danger: #a8261d;
+  --color-danger-muted: #fbe8e6;
+
+  --color-focus-ring: #1f5f9e;
+
+  /* ------------------------------------------------------------- spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* -------------------------------------------------------------- radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  /* ---------------------------------------------------------- typography */
+  --font-family-sans:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --font-family-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Courier New', monospace;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.75rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.7;
+
+  --letter-spacing-wide: 0.04em;
+
+  /* -------------------------------------------------------------- layout */
+  --sidebar-width: 260px;
+  --header-height: 60px;
+  --content-max-width: 960px;
+
+  /* --------------------------------------------------------- breakpoints */
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+
+  /* -------------------------------------------------------------- motion */
+  --transition-fast: 120ms ease;
+  --transition-base: 180ms ease;
+}
