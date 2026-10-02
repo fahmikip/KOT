@@ -7,6 +7,7 @@ export interface FileDropZoneProps {
   onFilesSelected?: (files: File[]) => void
   accept?: string
   multiple?: boolean
+  onDroppedFiles?: (files: File[]) => void
   disabled?: boolean
   className?: string
 }
@@ -27,6 +28,7 @@ export function FileDropZone({
   onFilesSelected,
   accept,
   multiple = false,
+  onDroppedFiles,
   disabled = false,
   className
 }: FileDropZoneProps) {
@@ -63,10 +65,11 @@ export function FileDropZone({
       const files = Array.from(event.dataTransfer.files)
       if (files.length > 0) {
         setSelectedNames(files.map((file) => file.name))
-        onFilesSelected?.(files)
+        if (onDroppedFiles) onDroppedFiles(files)
+        else onFilesSelected?.(files)
       }
     },
-    [disabled, onFilesSelected]
+    [disabled, onFilesSelected, onDroppedFiles]
   )
 
   const handleDragOver = useCallback(

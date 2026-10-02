@@ -10,8 +10,11 @@ const alias = {
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    plugins: [externalizeDepsPlugin({ include: ['sharp'] })],
     define: { __APP_VERSION__: appVersion }
+  },
+  preload: {
+    plugins: [externalizeDepsPlugin()]
   },
   renderer: {
     resolve: { alias },

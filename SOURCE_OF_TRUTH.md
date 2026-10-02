@@ -36,8 +36,7 @@ Product version : V1
 App version     : 0.1.0   (dari package.json, di-inject saat build)
 ```
 
-Phase 1 hanya application shell. `0.1.0` adalah versi pertama yang bisa dijalankan, **belum**
-mengandung fitur apa pun.
+Phase 1 membangun application shell; Phase 2 menambahkan Image Compressor dan Image Resizer.
 
 ## PURPOSE
 
@@ -131,6 +130,17 @@ Rincian di `FEATURES.md` (sumber: §8–§13).
 
 > Tidak ada fitur lain. Tidak boleh ada tombol, menu, atau modul di luar tabel ini.
 
+### IMAGE TOOLS STATUS (Phase 2)
+
+| Tool | Status | Detail |
+|------|--------|--------|
+| Image Compressor | IMPLEMENTED | Lokal via Sharp; JPG/JPEG/PNG/WEBP; quality JPEG/WEBP default 80; PNG lossless |
+| Image Resizer | IMPLEMENTED | Lebar/tinggi/persentase; rasio dijaga; upscale ditolak |
+
+Image Tools menerima maksimal 100 file, ukuran maksimal 100 MB per file, dan batas raster
+100 megapixel. Batch berjalan sekuensial. User memilih satu folder output per batch. Output memakai suffix `-compressed` atau `-resized`; benturan diberi suffix ` (2)`, ` (3)`, dan seterusnya. Output tidak menimpa input. Implementasi memakai preload
+IPC terbatas dan Sharp pada main process; tidak ada upload atau panggilan jaringan.
+
 ## NON-GOALS
 
 Fitur berikut secara eksplisit **tidak boleh** ada di V1:
@@ -200,13 +210,13 @@ Daftar ini menghambat pengerjaan phase berikutnya.
 |----|------|--------|
 | DEC-007 | ~~Tech stack~~ | **ACCEPTED — Electron + TS + React (DEC-007)** |
 | DEC-005 | OCR engine | DEFERRED / BLOCKED |
-| DEC-006 | Bahasa UI | UNDEFINED (PROPOSED: Bahasa Indonesia) |
+| DEC-006 | ~~Bahasa UI~~ | ACCEPTED (Bahasa Indonesia; Phase 2) |
 | DEC-008 | Engine/library PDF compression | UNDEFINED |
-| DEC-009 | Tujuan output file (save dialog vs folder output vs ZIP hasil) | UNDEFINED |
-| DEC-010 | Policy nama file duplikat (auto-suffix / skip / tanya) | UNDEFINED |
+| DEC-009 | Tujuan output file | ACCEPTED (Phase 2; lihat DEC-029) |
+| DEC-010 | Policy nama file duplikat | ACCEPTED (Phase 2; auto-suffix, lihat DEC-029) |
 | DEC-011 | ~~Testing framework~~ | **ACCEPTED — Vitest + Testing Library (DEC-011)** |
 | DEC-012 | Distribusi: installer, code signing, auto-update | UNDEFINED |
-| DEC-013 | Batas ukuran file maksimum | UNDEFINED |
+| DEC-013 | Batas ukuran file | ACCEPTED untuk Image Tools: 100 MB/file, batch 100 (Phase 2) |
 | DEC-014 | PDF → Image: page size dan DPI default | UNDEFINED |
 | DEC-015 | Image → PDF: page size default (A4/Letter/Fit) | UNDEFINED |
 | DEC-016 | ZIP Creator: file saja atau folder penuh | UNDEFINED (spesifikasi ambigu) |

@@ -71,11 +71,12 @@ describe('coming soon page (Phase 1 §14)', () => {
     expect(screen.getAllByText('Coming Soon').length).toBeGreaterThan(0)
   })
 
-  it('menyatakan bahwa tidak ada file yang diproses', () => {
+  it('menampilkan UI pemrosesan untuk image compressor yang sudah aktif', () => {
     setViewport(true)
     renderAppAt('/image/compress')
 
-    expect(screen.getByText(/tidak ada file yang diproses pada halaman ini/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Kompres Gambar' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '1. Pilih gambar' })).toBeInTheDocument()
   })
 
   it('tidak punya tombol aksi yang menyesatkan', () => {
@@ -91,7 +92,7 @@ describe('coming soon page (Phase 1 §14)', () => {
     expect(buttons).toHaveLength(0)
   })
 
-  it('tidak punya input file', () => {
+  it('coming soon tetap tidak punya input file', () => {
     setViewport(true)
     renderAppAt('/file/zip')
 

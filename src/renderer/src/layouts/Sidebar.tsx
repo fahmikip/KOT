@@ -11,7 +11,8 @@ export interface SidebarProps {
 }
 
 const STATUS_BADGE: Record<ToolStatus, { label: string; tone: 'info' }> = {
-  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'info' }
+  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'info' },
+  [TOOL_STATUS.READY]: { label: 'Siap digunakan', tone: 'info' }
 }
 
 /**

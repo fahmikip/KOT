@@ -1,7 +1,8 @@
 /** Tipe bersama untuk definisi tool. Data ada di src/renderer/src/lib/routes.ts */
 
 export const TOOL_STATUS = {
-  COMING_SOON: 'coming-soon'
+  COMING_SOON: 'coming-soon',
+  READY: 'ready'
 } as const
 
 export type ToolStatus = (typeof TOOL_STATUS)[keyof typeof TOOL_STATUS]

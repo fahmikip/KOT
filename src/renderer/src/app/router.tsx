@@ -3,6 +3,7 @@ import { AppLayout } from '@/layouts/AppLayout'
 import { ComingSoon } from '@/pages/ComingSoon'
 import { Dashboard } from '@/pages/Dashboard'
 import { NotFound } from '@/pages/NotFound'
+import { ImageToolPage } from '@/features/image-tools/ImageToolPage'
 import { TOOLS, toRoutePath } from '@/lib/routes'
 
 /**
@@ -20,7 +21,11 @@ export function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         {TOOLS.map((tool) => (
-          <Route key={tool.id} path={toRoutePath(tool.path)} element={<ComingSoon />} />
+          <Route
+            key={tool.id}
+            path={toRoutePath(tool.path)}
+            element={tool.id === 'image-compress' || tool.id === 'image-resize' ? <ImageToolPage operation={tool.id === 'image-compress' ? 'compress' : 'resize'} /> : <ComingSoon />}
+          />
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>

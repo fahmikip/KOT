@@ -42,13 +42,15 @@ function ComingSoonBody({ tool, title }: ComingSoonBodyProps) {
 
       <div className="coming-soon__status">
         <span className="coming-soon__status-label">Status:</span>
-        <Badge tone="info">Coming Soon</Badge>
+        <Badge tone="info">{status === TOOL_STATUS.READY ? 'Siap digunakan' : 'Coming Soon'}</Badge>
         <span className="coming-soon__status-value">{status}</span>
       </div>
 
-      <Alert tone="info" title="Fitur ini belum tersedia pada versi saat ini.">
-        <p>Tidak ada file yang diproses pada halaman ini.</p>
-      </Alert>
+      {status === TOOL_STATUS.COMING_SOON ? (
+        <Alert tone="info" title="Fitur ini belum tersedia pada versi saat ini.">
+          <p>Tidak ada file yang diproses pada halaman ini.</p>
+        </Alert>
+      ) : null}
 
       {tool && tool.plannedCapabilities.length > 0 ? (
         <section className="coming-soon__planned">

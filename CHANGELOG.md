@@ -103,7 +103,7 @@ Aplikasi desktop pertama yang bisa dijalankan. **Belum ada fitur processing apa 
 
 #### Added — Tests
 
-- **82 test pada 7 file, semuanya lulus.**
+- Phase 1: 82 test pada 7 file. Phase 2: 92 test pada 8 file, semuanya lulus.
 - Cakupan: registry route, semua route dapat dinavigasi, 404, shell, responsif & drawer,
   aksesibilitas (landmark, heading, accessible name, focus), komponen, error handling.
 - `tests/setup.ts` dengan stub `matchMedia`; `tests/helpers/renderApp.tsx` memakai
@@ -130,5 +130,13 @@ Aplikasi desktop pertama yang bisa dijalankan. **Belum ada fitur processing apa 
 - Tidak ada upload, tidak ada analytics, tidak ada webfont — semua lokal (DEC-001).
 - Tidak ada folder `features/`, `services/`, `engine/`, atau `preload/` karena belum ada
   consumer (DEC-026, DEC-023).
-- Peringatan build `preload config is missing` **diharapkan**, bukan error.
-- Test engine/processing belum ada karena engine-nya belum ada.
+- Preload terbatas ditambahkan pada Phase 2 untuk IPC image tools.
+
+
+## Phase 2 � Image Tools
+
+- Mengimplementasikan Image Compressor dan Image Resizer lokal untuk JPG/JPEG/PNG/WEBP.
+- Menambahkan quality slider, resize lebar/tinggi/persentase, progress batch, ringkasan, error per file, dan simpan hasil.
+- Memproses file satu per satu dengan batas 100 MB per file, 100 file, dan 100 megapixel.
+- Menambahkan Sharp pada main process dan preload IPC terbatas.
+- Mencatat keputusan Phase 2 di DEC-027 sampai DEC-030.

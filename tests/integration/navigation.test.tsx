@@ -12,7 +12,7 @@ describe('navigasi: dashboard (Phase 1 §19)', () => {
 })
 
 describe('navigasi: setiap route tool', () => {
-  it.each(TOOLS.map((tool) => ({ path: tool.path, label: tool.label })))(
+  it.each(TOOLS.filter((tool) => tool.status === 'coming-soon').map((tool) => ({ path: tool.path, label: tool.label })))(
     'route $path terbuka dan menampilkan Coming Soon',
     ({ path }) => {
       renderAppAt(path)
@@ -20,6 +20,15 @@ describe('navigasi: setiap route tool', () => {
       // "Coming Soon" muncul di sidebar (13 badge) dan di halaman, jadi pakai getAllByText.
       expect(screen.getAllByText('Coming Soon').length).toBeGreaterThan(0)
       expect(screen.getByText(/tidak ada file yang diproses pada halaman ini/i)).toBeInTheDocument()
+    }
+  )
+
+  it.each(TOOLS.filter((tool) => tool.status === 'ready').map((tool) => ({ path: tool.path, id: tool.id })))(
+    'route $path membuka tool yang diimplementasikan', ({ path, id }) => {
+      renderAppAt(path)
+      expect(screen.queryByText(/tidak ada file yang diproses pada halaman ini/i)).not.toBeInTheDocument()
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+      expect(id).toMatch(/^image-/)
     }
   )
 })

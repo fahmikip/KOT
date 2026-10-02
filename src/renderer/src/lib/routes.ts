@@ -4,9 +4,7 @@
  * Menambah atau mengubah tool HARUS dilakukan di berkas ini saja, supaya navigasi
  * dan routing tidak pernah berbeda.
  *
- * CATATAN PHASE 1: seluruh tool berstatus 'coming-soon'. Belum ada satu pun tool yang
- * mengimplementasikan pemrosesan file. Menambahkan tool dengan status lain harus
- * menunggu phase implementasi fiturnya.
+ * Status tiap tool mengikuti phase implementasi masing-masing.
  */
 
 import {
@@ -58,7 +56,7 @@ export const TOOLS: readonly ToolDefinition[] = [
     group: 'image-tools',
     description: 'Mengurangi ukuran file gambar.',
     plannedCapabilities: ['Kompresi', 'Kontrol kualitas', 'Pemrosesan batch'],
-    status: TOOL_STATUS.COMING_SOON
+    status: TOOL_STATUS.READY
   },
   {
     id: 'image-resize',
@@ -73,7 +71,7 @@ export const TOOLS: readonly ToolDefinition[] = [
       'Pertahankan aspect ratio',
       'Pemrosesan batch'
     ],
-    status: TOOL_STATUS.COMING_SOON
+    status: TOOL_STATUS.READY
   },
   {
     id: 'image-convert',

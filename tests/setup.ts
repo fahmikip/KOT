@@ -1,10 +1,26 @@
 import '@testing-library/jest-dom/vitest'
 import { afterEach } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { vi } from 'vitest'
 
 afterEach(() => {
   cleanup()
 })
+
+const imageToolsMock = {
+  chooseImages: vi.fn().mockResolvedValue([]),
+  chooseFolder: vi.fn().mockResolvedValue([]),
+  inspect: vi.fn().mockResolvedValue([]),
+  process: vi.fn().mockResolvedValue([]),
+  saveResults: vi.fn().mockResolvedValue(0),
+  onProgress: vi.fn().mockReturnValue(() => {})
+}
+
+Object.defineProperty(window, 'imageTools', {
+  configurable: true,
+  value: imageToolsMock
+})
+Object.defineProperty(globalThis, 'imageTools', { configurable: true, value: imageToolsMock })
 
 /**
  * jsdom tidak mengimplementasikan window.matchMedia.

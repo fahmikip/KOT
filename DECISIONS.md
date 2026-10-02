@@ -35,14 +35,14 @@ Status yang dipakai:
 | DEC-003 | Disclaimer: bukan aplikasi resmi KPU | ACCEPTED |
 | DEC-004 | Larangan fitur: akun, telemetry, iklan, subscription | ACCEPTED |
 | DEC-005 | OCR ditunda sampai engine diputuskan | DEFERRED |
-| DEC-006 | Bahasa UI | PROPOSED |
+| DEC-006 | Bahasa UI | ACCEPTED (Phase 2) |
 | DEC-007 | **Tech stack: Electron + TypeScript + React** | **ACCEPTED** |
 | DEC-008 | Engine kompresi PDF | UNDEFINED |
-| DEC-009 | Tujuan output file | UNDEFINED |
-| DEC-010 | Policy nama file duplikat | UNDEFINED |
+| DEC-009 | Tujuan output file | ACCEPTED (Phase 2: samping sumber, salin ke folder pilihan) |
+| DEC-010 | Policy nama file duplikat | ACCEPTED (Phase 2: suffix otomatis) |
 | DEC-011 | **Testing framework: Vitest + Testing Library** | **ACCEPTED** |
 | DEC-012 | Distribusi & installer | UNDEFINED |
-| DEC-013 | Batas ukuran file maksimum | UNDEFINED |
+| DEC-013 | Batas ukuran file maksimum | ACCEPTED (Phase 2: 100 MB/file, batch 100) |
 | DEC-014 | PDF → Image: default DPI & page size | UNDEFINED |
 | DEC-015 | Image → PDF: default page size | UNDEFINED |
 | DEC-016 | ZIP Creator: file vs folder | UNDEFINED |
@@ -541,4 +541,55 @@ service (belum ada IPC atau engine), sehingga kedua folder tersebut akan kosong.
 folder kosong tanpa isi adalah ceremony.
 **Dampak:** `features/<tool>/` dibuat satu per satu pada phase implementasi tool tersebut.
 `services/` muncul saat IPC/engine pertama ada. Struktur final ada di `ARCHITECTURE.md`.
+**Status:** ACCEPTED
+
+## DEC-027
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Image Compressor menggunakan `sharp` (libvips) di Electron main process.
+Input JPG/JPEG, PNG, dan WEBP mempertahankan format. Quality 10–100 (default 80) hanya
+diterapkan pada JPEG/WEBP. PNG memakai encoder lossless (compression level 9 + palette).
+**Alasan:** Stack Phase 1 tidak memiliki codec gambar; Sharp memproses ketiga codec secara
+lokal tanpa API eksternal dan berjalan di luar UI renderer.
+**Alternatif:** Canvas renderer (menahan bitmap/file dalam renderer dan dukungan PNG lossless
+terbatas); ImageMagick/Ghostscript subprocess (binary tambahan); konversi format (di luar scope).
+**Dependency:** `sharp` — codec decode/encode JPG/JPEG/PNG/WEBP dan resize lokal. Lisensi
+Apache-2.0; binary libvips native per platform disediakan paket Sharp. Alternatif: browser
+canvas atau binary eksternal, keduanya memiliki batasan/biaya distribusi lebih besar.
+**Dampak:** Native module memerlukan distribusi binary yang cocok dengan platform/arsitektur
+Electron. Runtime Phase 2 diverifikasi pada Windows x64 dengan Electron/Sharp yang terpasang.
+**Status:** ACCEPTED
+
+## DEC-028
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Image Resizer menjaga aspect ratio aktif dan mencegah upscale. Mode width,
+height, dan percentage tersedia; batch menerapkan opsi yang sama per file. Batas 100 file
+diproses sekuensial, maksimum 100 MP per gambar.
+**Alasan:** Pilihan ini menjaga proporsi, mengurangi risiko penggunaan memori, dan memberi
+aturan batch yang deterministik.
+**Dampak:** Target dimensi di atas ukuran sumber ditolak. Tidak ada opsi free-stretch atau
+upscale.
+**Status:** ACCEPTED
+
+## DEC-029
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Hasil default ditulis di samping file sumber memakai suffix `-compressed` atau
+`-resized`; benturan nama mendapat suffix ` (2)`, ` (3)`, dan seterusnya. Tombol Simpan hasil
+menyalin output ke folder yang dipilih user tanpa overwrite.
+**Alasan:** Output otomatis per-file mendukung batch tanpa dialog satu per hasil dan menjaga
+file asli. Pemilihan folder tujuan tambahan tetap tersedia setelah proses.
+**Dampak:** Folder sumber harus dapat ditulis. File input dari media read-only gagal dengan
+pesan ramah; tidak ada fallback lokasi tersembunyi.
+**Status:** ACCEPTED
+
+## DEC-030
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Default Image Compressor quality = 80 pada skala integer 10–100. PNG selalu
+menggunakan lossless encoding dan mengabaikan kontrol quality.
+**Alasan:** Angka eksplisit dibutuhkan agar UI bisa memberi kontrol nyata; nilai tengah-atas
+menjadi default seimbang untuk JPEG/WebP. Format PNG tidak mendefinisikan lossy quality pada
+jalur lossless ini.
 **Status:** ACCEPTED

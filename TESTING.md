@@ -1,10 +1,9 @@
 # TESTING — KPU Office Tools
 
 > **STATUS: AKTIF.** Framework dipilih: **Vitest 5 + Testing Library + jsdom** (DEC-011).
-> Phase 1 memiliki **82 test, semuanya lulus** pada 7 file.
+> Phase 2: 92 test pada 8 file (engine gambar dan UI tools ditambahkan).
 >
-> Cakupan saat ini **hanya application shell** — navigasi, routing, responsif, aksesibilitas,
-> dan komponen UI. Test engine file processing belum ada karena engine-nya belum ada.
+> Cakupan mencakup shell Phase 1, image engine, validasi format, batch, dan interaksi Image Tools.
 
 ---
 
@@ -16,7 +15,7 @@ Command                                        Hasil
 npx eslint .                                    PASS (0 error, 0 warning)
 npx tsc --noEmit -p tsconfig.node.json          PASS
 npx tsc --noEmit -p tsconfig.web.json           PASS
-npx vitest run                                  PASS — 7 files, 82 tests
+npx vitest run                                  PASS — 8 files, 92 tests
 npm run build                                   PASS
 Electron 44.5.1 (runtime nyata)                 PASS — 0 console error
 ```
@@ -36,7 +35,8 @@ terresolve, navigasi hash, dan route 404. **0 console error, 0 renderer crash.**
 | `unit/routes.test.ts` | 9 | Registry route: path unik, group, status, urutan |
 | `integration/responsive.test.tsx` | 8 | Mobile + desktop, drawer, tabel |
 | `unit/error-handling.test.tsx` | 6 | ErrorBoundary, pesan user vs teknis, app info |
-| **Total** | **82** | **7 file** |
+| `unit/image-engine.test.ts` | 10 | Image codec dan engine |
+| **Total** | **92** | **8 file** |
 
 ---
 
@@ -364,8 +364,8 @@ batch, dan kasus error file per-item.
 |------|--------|
 | Strategi test | DOKUMENTED |
 | Framework | **AKTIF — Vitest 5 + Testing Library + jsdom** (DEC-011) |
-| Test files | **7 file, 82 test, semua lulus** (Phase 1) |
-| Cakupan | Application shell saja: routing, navigasi, responsif, a11y, komponen |
+| Test files | **8 file, 92 test, semua lulus** (Phase 2) |
+| Cakupan | Shell, routing, a11y, image engine, batch dan codec |
 | Test engine / processing | **BELUM ADA** — engine-nya belum ada |
 | Fixture files | BELUM ADA — butuh tool untuk membuatnya (phase engine) |
 | E2E / browser test | BELUM ADA |

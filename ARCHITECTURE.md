@@ -1,8 +1,8 @@
 # ARCHITECTURE — KPU Office Tools
 
-> **STATUS: Phase 1 selesai.** Struktur folder di bawah adalah struktur **sesuai nyatanya**,
+> **STATUS: Phase 2 selesai untuk Image Compressor dan Image Resizer.** Struktur folder di bawah adalah struktur **sesuai nyatanya**,
 > bukan usulan. Lapisan `engine/` dan `preload/` **belum ada** — keduanya muncul pada phase
-> yang benar-benar membutuhkan. Lihat DEC-023 dan DEC-026.
+> yang benar-benar membutuhkan. Lihat DEC-027�030.
 
 ---
 

@@ -12,13 +12,9 @@ Status legend:
 | `DEFERRED` | Ditunda; tidak diimplementasikan di V1 sampai ada keputusan |
 | `BLOCKED` | Tidak bisa dikerjakan karena ketergantungan yang belum diputuskan |
 
-> **Tidak ada satu pun fitur yang berstatus `IMPLEMENTED`.**
+> Image Compressor dan Image Resizer berstatus `IMPLEMENTED` pada Phase 2.
 >
-> Phase 1 sudah membangun **shell tempat semua fitur ini akan hidup**: window aplikasi,
-> navigasi, routing, design system, dan responsif layout. Jadi dari sudut pandang kode,
-> setiap tool sudah punya *tempat* dan *tempat masuk* di navigasi — tetapi belum punya
-> fungsi apa pun. Halaman yang tampil untuk setiap tool adalah "Coming Soon" yang jujur.
-> Yang diimplementasikan Phase 1 adalah `FileDropZone` dan komponen UI dasar, bukan fitur.
+> Phase 1 membangun shell aplikasi; Phase 2 menambahkan Image Compressor dan Image Resizer. Fitur lainnya tetap Coming Soon.
 
 ### Prasyarat yang sudah satisfied di Phase 1
 
@@ -37,15 +33,14 @@ Tidak ada satu pun tool yang bisa dikerjakan sebelum keputusan ini tersedia:
 | ID | Yang dibutuhkan | Tool yang tertahan |
 |----|-----------------|---------------------|
 | DEC-008 | Engine kompresi PDF | PDF Compressor |
-| DEC-009 | Tujuan output file | Semua tool |
-| DEC-010 | Policy nama file duplikat | Semua tool yang menulis file |
-| DEC-013 | Batas ukuran file | Semua tool |
+
+
+
 | DEC-014 | Default DPI & page size | PDF → Image |
 | DEC-015 | Default page size | Image → PDF |
 | DEC-016 | ZIP: file atau folder | ZIP Creator |
 
-Phase 2 perlu memutuskan DEC-009 dan DEC-013 lebih dulu, karena keduanya memengaruhi
-kontrak `OutputTarget` dan validasi input — bukan hanya UI.
+DEC-009, DEC-010, dan DEC-013 diputuskan untuk Image Tools Phase 2; keputusan itu belum otomatis berlaku bagi fitur lain.
 
 ---
 
@@ -55,8 +50,8 @@ Kolom "Kode" menunjukkan apakah ada implementasi untuk fitur tersebut.
 
 | # | Modul | Fitur | Status | Kode | Estimasi |
 |---|-------|-------|--------|------|----------|
-| 1 | Image Tools | Image Compressor | SPECIFIED | — | S |
-| 2 | Image Tools | Image Resizer | SPECIFIED | — | S |
+| 1 | Image Tools | Image Compressor | IMPLEMENTED | `src/main/imageEngine.ts` + feature UI | M |
+| 2 | Image Tools | Image Resizer | IMPLEMENTED | `src/main/imageEngine.ts` + feature UI | M |
 | 3 | Image Tools | Image Converter | SPECIFIED | — | S |
 | 4 | PDF Tools | PDF Compressor | PARTIAL | — | L |
 | 5 | PDF Tools | PDF Merge | SPECIFIED | — | M |
@@ -89,7 +84,7 @@ Format input: JPG, JPEG, PNG, WEBP.
 `UNDEFINED` yang perlu diputuskan:
 
 - Apakah hasil selalu format yang sama, atau ada opsi ubah format sekalian?
-- Rentang quality step (mis. 10–100 dengan step 1, atau 5 preset)?
+- Quality Phase 2: JPEG/WEBP 10�100, default 80; PNG lossless.
 - Apakah metadata (EXIF) dipertahankan? Butterfly: sebagian alatQgjpeg menghapus EXIF
   berisi lokasi dan waktu.
 - Apakah ada batas dimensi (mis. resize otomatis jika melebihi 4000px)?
@@ -103,8 +98,8 @@ Format input: JPG, JPEG, PNG, WEBP.
 
 `UNDEFINED`:
 
-- Apakah wajib maintain aspect ratio, atau ada opsi free-stretch?
-- Resize ke lebih besar (upscaling) diizinkan atau ditolak?
+- Phase 2: aspect ratio dijaga dan upscale ditolak; lebar/tinggi/persentase berlaku untuk seluruh batch.
+
 - Preset ukuran umum (mis. 4R, 3x4 cm, ukuran pas foto) perlu atau tidak? Preset seperti
   ini berguna untuk foto identitas, tetapi belum ada di spesifikasi.
 - Batch: apakah opsi berlaku ke semua file sekaligus?

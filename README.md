@@ -11,16 +11,14 @@ khususnya pekerjaan yang terkait dengan **foto, PDF, dokumen, dan file**.
 ## Status Project
 
 ```
-FASE     : Phase 1 — Fondasi & Application Shell  (SELESAI)
+FASE     : Phase 2 — Image Tools (SELESAI)
 STACK    : Electron 44 + TypeScript 5.9 + React 19  (DEC-007, Opsi A)
-TEST     : 82 test lulus (Vitest + Testing Library)
+TEST     : 92 test lulus (Vitest + Testing Library)
 BUILD    : out/ — bisa dijalankan
-FITUR    : 0 dari 13 — semua masih Coming Soon
+FITUR    : 2 dari 13 — Image Compressor + Image Resizer
 ```
 
-**Aplikasi bisa dijalankan, tetapi belum memproses file apa pun.** Yang sudah ada adalah
-fondasi: window aplikasi, navigasi, routing, design system, dan test. Seluruh 13 tool
-menampilkan halaman "Coming Soon" yang jujur — tidak ada mock, tidak ada angka rekaan.
+**Image Compressor dan Image Resizer memproses gambar secara lokal.** Sebelas tool lainnya masih Coming Soon.
 
 Detail di `SOURCE_OF_TRUTH.md` dan `CHANGELOG.md`.
 
@@ -32,13 +30,11 @@ Prasyarat: Node.js 20+ dan npm.
 npm install          # pasang dependency
 npm run dev          # mode pengembangan (hot reload)
 npm start            # jalankan hasil build produksi
-npm test             # 82 test
+npm test             # 92 test
 npm run verify       # lint + typecheck + test + build
 ```
 
-Build produksi menghasilkan folder `out/`. Perintah `npm run build` mencetak peringatan
-`preload config is missing` — **ini diharapkan**, aplikasi Phase 1 tidak memakai preload
-(DEC-023).
+Build produksi menghasilkan folder `out/`, termasuk preload terbatas untuk image IPC.
 
 ## Prinsip
 

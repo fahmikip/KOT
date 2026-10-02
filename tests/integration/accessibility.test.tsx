@@ -33,7 +33,7 @@ describe('accessibility (Phase 1 §16)', () => {
 
   it('tidak ada heading level 1 ganda di halaman Coming Soon', () => {
     setViewport(true)
-    renderAppAt('/image/resize')
+    renderAppAt('/pdf/merge')
 
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
   })
