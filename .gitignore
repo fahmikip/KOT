@@ -1,0 +1,34 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Logs & temp
+*.log
+*.tmp
+npm-debug.log*
+yarn-error.log*
+
+# Environment (JANGAN pernah commit kredensial)
+.env
+.env.*
+!.env.example
+
+# Dependency & build output
+node_modules/
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Test output
+coverage/
+
+# Folder hasil kerja lokal
+/output/
+/tmp/
