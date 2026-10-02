@@ -111,13 +111,13 @@ describe('Loading', () => {
 })
 
 describe('FileDropZone (Phase 1 §12 — UI saja)', () => {
-  it('merender area drop dengan aksi Choose Files', () => {
+  it('merender area drop dengan aksi Pilih File', () => {
     render(<FileDropZone />)
 
     const area = screen.getByRole('button')
     expect(area).toBeInTheDocument()
     expect(screen.getByText('Drop file di sini')).toBeInTheDocument()
-    expect(screen.getByText('Choose Files')).toBeInTheDocument()
+    expect(screen.getByText('Pilih File')).toBeInTheDocument()
   })
 
   it('area drop adalah button sehingga dapat diakses keyboard', () => {

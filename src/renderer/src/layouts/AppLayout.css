@@ -24,6 +24,7 @@
 
 .app-layout__sidebar--open {
   transform: translateX(0);
+  box-shadow: var(--shadow-lg);
 }
 
 .app-layout__scrim {
@@ -32,7 +33,7 @@
   z-index: 25;
   padding: 0;
   border: 0;
-  background-color: rgb(22 25 29 / 45%);
+  background-color: rgb(45 12 18 / 55%);
   cursor: pointer;
 }
 

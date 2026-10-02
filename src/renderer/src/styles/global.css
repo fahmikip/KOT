@@ -36,6 +36,12 @@ figure {
   margin: 0;
 }
 
+/* Tracking negatif pada judul besar agar optically tighter, bukan lebih besar. */
+h1,
+h2 {
+  letter-spacing: -0.01em;
+}
+
 h1 {
   font-size: var(--font-size-2xl);
   line-height: var(--line-height-tight);
@@ -67,6 +73,11 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+::selection {
+  background-color: var(--color-primary-muted);
+  color: var(--color-primary-active);
 }
 
 button {

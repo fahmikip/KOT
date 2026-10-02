@@ -108,7 +108,7 @@ export function FileDropZone({
         <span className="dropzone__hint" id={hintId}>
           atau pilih dari komputer
         </span>
-        <span className="dropzone__action">Choose Files</span>
+        <span className="dropzone__action">Pilih File</span>
       </button>
 
       <input

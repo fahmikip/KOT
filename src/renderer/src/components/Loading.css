@@ -10,9 +10,9 @@
 .loading__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--color-border-strong);
+  border: 2px solid var(--color-primary-muted);
   border-top-color: var(--color-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-pill);
   animation: loading-spin 700ms linear infinite;
 }
 

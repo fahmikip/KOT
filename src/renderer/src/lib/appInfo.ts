@@ -15,5 +15,8 @@ export const APP_VERSION = __APP_VERSION__
 export const APP_DISCLAIMER =
   'KPU Office Tools adalah alat bantu internal. Bukan aplikasi resmi KPU dan bukan aplikasi kepemiluan.'
 
+/** Baris singkat di header. Memakai kalimat yang sama dengan disclaimer. */
+export const APP_TAGLINE = 'Alat bantu internal untuk pekerjaan file dan dokumen'
+
 /** Major/minor version saja, untuk header. */
 export const APP_SHORT_VERSION = APP_VERSION.split('.').slice(0, 2).join('.')

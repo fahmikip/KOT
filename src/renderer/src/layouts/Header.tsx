@@ -1,4 +1,4 @@
-import { APP_NAME, APP_SHORT_VERSION } from '@/lib/appInfo'
+import { APP_NAME, APP_SHORT_VERSION, APP_TAGLINE } from '@/lib/appInfo'
 import './Header.css'
 
 export interface HeaderProps {
@@ -34,9 +34,12 @@ export function Header({ onMenuToggle, isMenuOpen, showMenuButton }: HeaderProps
         ) : null}
 
         <div className="header__identity">
+          <span className="header__mark" aria-hidden="true" />
           <span className="header__name">{APP_NAME}</span>
           <span className="header__version">v{APP_SHORT_VERSION}</span>
         </div>
+
+        <p className="header__tagline">{APP_TAGLINE}</p>
       </div>
     </header>
   )

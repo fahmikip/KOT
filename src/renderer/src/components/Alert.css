@@ -1,7 +1,10 @@
 .alert {
-  border: 1px solid;
+  border: 1px solid var(--alert-border);
   border-radius: var(--radius-md);
   padding: var(--space-4);
+  background-color: var(--alert-bg);
+  /* Garis kiri warna tone: penanda cepat tanpa ikon dekoratif. */
+  box-shadow: inset var(--rule-accent-width) 0 0 var(--alert-bar);
 }
 
 .alert__title {
@@ -20,25 +23,29 @@
 }
 
 .alert--info {
-  background-color: var(--color-primary-muted);
-  border-color: #bcd6ec;
+  --alert-bg: var(--color-primary-muted);
+  --alert-border: var(--color-primary-border);
+  --alert-bar: var(--color-primary);
   color: var(--color-text-primary);
 }
 
 .alert--success {
-  background-color: var(--color-success-muted);
-  border-color: #b9dcc8;
+  --alert-bg: var(--color-success-muted);
+  --alert-border: var(--color-success-border);
+  --alert-bar: var(--color-success);
   color: var(--color-text-primary);
 }
 
 .alert--warning {
-  background-color: var(--color-warning-muted);
-  border-color: #ecd5a4;
+  --alert-bg: var(--color-warning-muted);
+  --alert-border: var(--color-warning-border);
+  --alert-bar: var(--color-warning);
   color: var(--color-text-primary);
 }
 
 .alert--danger {
-  background-color: var(--color-danger-muted);
-  border-color: #eec4c0;
+  --alert-bg: var(--color-danger-muted);
+  --alert-border: var(--color-danger-border);
+  --alert-bar: var(--color-danger);
   color: var(--color-text-primary);
 }

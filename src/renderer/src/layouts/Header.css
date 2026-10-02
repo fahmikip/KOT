@@ -3,8 +3,9 @@
   top: 0;
   z-index: 20;
   height: var(--header-height);
-  background-color: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-chrome);
+  /* Garis emas memisahkan chrome dari konten dan menandai identitas. */
+  border-bottom: var(--rule-accent-width) solid var(--color-accent);
 }
 
 .header__inner {
@@ -15,22 +16,27 @@
   padding: 0 var(--space-4);
 }
 
+.header :focus-visible {
+  outline-color: var(--color-focus-ring-on-chrome);
+}
+
 .header__menu-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
   width: 40px;
   height: 40px;
   background-color: transparent;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-chrome-border);
   border-radius: var(--radius-md);
-  color: var(--color-text-primary);
+  color: var(--color-text-on-chrome);
   cursor: pointer;
   transition: background-color var(--transition-fast);
 }
 
 .header__menu-button:hover {
-  background-color: var(--color-surface-muted);
+  background-color: rgb(255 255 255 / 12%);
 }
 
 .header__menu-icon {
@@ -40,15 +46,24 @@
 
 .header__identity {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-2);
   min-width: 0;
+}
+
+.header__mark {
+  flex: 0 0 auto;
+  width: 4px;
+  height: 22px;
+  background-color: var(--color-accent);
+  border-radius: var(--radius-pill);
 }
 
 .header__name {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
+  letter-spacing: -0.01em;
+  color: var(--color-text-on-chrome);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -57,6 +72,23 @@
 .header__version {
   font-family: var(--font-family-mono);
   font-size: var(--font-size-xs);
-  color: var(--color-text-secondary);
+  color: var(--color-accent);
   white-space: nowrap;
+}
+
+.header__tagline {
+  margin-left: auto;
+  color: var(--color-text-on-chrome-muted);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-wide);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tagline hanya muat di layar lebar; identitas aplikasi tetap utuh. */
+@media (max-width: 900px) {
+  .header__tagline {
+    display: none;
+  }
 }

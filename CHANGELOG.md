@@ -126,17 +126,44 @@ Aplikasi desktop pertama yang bisa dijalankan. **Belum ada fitur processing apa 
 
 #### Catatan
 
-- **Tidak ada fitur yang diimplementasikan.** 13 tool masih `COMING SOON` yang jujur.
+- **Pada Phase 1 tidak ada fitur yang diimplementasikan.** 13 tool masih `COMING SOON` yang
+  jujur; Image Compressor dan Image Resizer menyusul pada Phase 2.
 - Tidak ada upload, tidak ada analytics, tidak ada webfont — semua lokal (DEC-001).
-- Tidak ada folder `features/`, `services/`, `engine/`, atau `preload/` karena belum ada
-  consumer (DEC-026, DEC-023).
-- Preload terbatas ditambahkan pada Phase 2 untuk IPC image tools.
+- Folder `features/`, `services/`, dan `engine/` tidak dibuat karena belum ada consumer
+  (DEC-026). Preload terbatas baru muncul pada Phase 2 untuk IPC image tools (DEC-027).
 
 
-## Phase 2 � Image Tools
+## Phase 2 — Image Tools
 
 - Mengimplementasikan Image Compressor dan Image Resizer lokal untuk JPG/JPEG/PNG/WEBP.
 - Menambahkan quality slider, resize lebar/tinggi/persentase, progress batch, ringkasan, error per file, dan simpan hasil.
 - Memproses file satu per satu dengan batas 100 MB per file, 100 file, dan 100 megapixel.
 - Menambahkan Sharp pada main process dan preload IPC terbatas.
 - Mencatat keputusan Phase 2 di DEC-027 sampai DEC-030.
+
+## UI Redesign — Maroon & Gold
+
+- Palet warna direvisi dari biru corporate menjadi **merah maron + aksen emas** (DEC-031,
+  menggantikan nilai warna pada DEC-022). Seluruh nilai warna tetap terpusat di `tokens.css`.
+- Header memakai permukaan maron dengan garis emas di bawahnya dan bar emas di samping nama
+  aplikasi; sidebar memakai maron lebih gelap dengan penanda aktif berupa bar emas.
+- Permukaan konten tetap terang; status tool yang siap memakai badge emas, yang belum tersedia
+  memakai badge netral — Dashboard tidak lagi menandai tool aktif sebagai "Coming Soon".
+- `src/renderer/src/styles/tokens.css` — palet baru (maron `#7a1f2b` sebagai aksi utama, emas
+  `#d4af37` sebagai aksen), token `chrome`/`chrome-deep` untuk header dan sidebar, skala
+  elevation (`--shadow-sm/md/lg`), radius pill untuk badge, token border semantik.
+- Header: latar maron, garis emas 3 px di bawah, bar aksen di samping nama aplikasi, versi
+  emas, tagline baru `APP_TAGLINE`, dan focus ring emas di permukaan gelap.
+- Sidebar: latar maron gelap, label grup emas, item aktif ditandai bar emas (tanpa menggeser
+  layout), badge diselaraskan dengan permukaan gelap, hairline pemisah di bawah Dashboard.
+- Footer: garis emas tipis sebagai penutup halaman.
+- Halaman Dashboard, Coming Soon, dan Not Found memakai panel berpermukaan putih dengan garis
+  aksen emas di atas dan judul bertracking rapat; eyebrow memakai segmen emas.
+- Komponen: tombol mendapat state `:active` dan focus ring eksplisit, badge mendapat tone
+  `accent`, alert memakai garis kiri sesuai tone, card dan section memakai elevation halus,
+  drop zone memakai gaya maron, status file menjadi label pill.
+- Form di Image Tools memakai border 3:1, radius konsisten, dan nilai quality tampil sebagai
+  label emas.
+- Teks bahasa Inggris "Choose Files" diganti "Pilih File" agar konsisten dengan DEC-006.
+- Test diperbarui untuk label tersebut; total tetap 92 test lulus.
+- `DECISIONS.md` — DEC-031 ditambahkan; DEC-022 ditandai sudah direvisi warnanya.

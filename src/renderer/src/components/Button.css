@@ -12,7 +12,8 @@
   transition:
     background-color var(--transition-fast),
     border-color var(--transition-fast),
-    color var(--transition-fast);
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .button--sm {
@@ -34,17 +35,29 @@
   opacity: 0.55;
 }
 
+/* Semua tombol duduk di permukaan terang, jadi focus ring memakai maron. */
+.button:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
 /* ------------------------------------------------------------- variants */
 
 .button--primary {
   background-color: var(--color-primary);
   border-color: var(--color-primary);
   color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
 }
 
 .button--primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover);
   border-color: var(--color-primary-hover);
+}
+
+.button--primary:active:not(:disabled) {
+  background-color: var(--color-primary-active);
+  border-color: var(--color-primary-active);
 }
 
 .button--secondary {
@@ -55,6 +68,8 @@
 
 .button--secondary:hover:not(:disabled) {
   background-color: var(--color-surface-muted);
+  border-color: var(--color-primary);
+  color: var(--color-primary-hover);
 }
 
 .button--ghost {
@@ -75,5 +90,6 @@
 }
 
 .button--danger:hover:not(:disabled) {
-  background-color: #8f1f17;
+  background-color: var(--color-danger-hover);
+  border-color: var(--color-danger-hover);
 }

@@ -51,11 +51,16 @@ Status yang dipakai:
 | DEC-019 | **Inisialisasi git repository** | **ACCEPTED** |
 | DEC-020 | Nama folder project | PROPOSED |
 | DEC-021 | Routing memakai HashRouter | ACCEPTED (Phase 1) |
-| DEC-022 | Design tokens & palet warna | ACCEPTED (Phase 1) |
+| DEC-022 | Design tokens & palet warna | ACCEPTED (Phase 1; warna direvisi DEC-031) |
 | DEC-023 | Tidak ada preload / IPC di Phase 1 | ACCEPTED (Phase 1) |
 | DEC-024 | Styling: CSS biasa + token | ACCEPTED (Phase 1) |
 | DEC-025 | Registry route sebagai sumber tunggal | ACCEPTED (Phase 1) |
 | DEC-026 | Folder features/ dan services/ belum dibuat | ACCEPTED (Phase 1) |
+| DEC-027 | Image engine: Sharp di main process | ACCEPTED (Phase 2) |
+| DEC-028 | Resize: aspect ratio, tanpa upscale, batch sekuensial | ACCEPTED (Phase 2) |
+| DEC-029 | Output: suffix `-compressed`/`-resized`, duplikat auto-suffix | ACCEPTED (Phase 2) |
+| DEC-030 | Default kualitas kompresi 80, PNG lossless | ACCEPTED (Phase 2) |
+| DEC-031 | **Palet warna: merah maron + aksen emas** | **ACCEPTED** |
 
 ---
 
@@ -476,7 +481,7 @@ Aturan yang berlaku bersama palet ini:
 biru corporate lebih terang (kontras teks putih menurun).
 **Dampak:** Warna di seluruh aplikasi wajib diambil dari token. Nilai Literal di komponen
 menyimpang dari token dianggap pelanggaran.
-**Status:** ACCEPTED — dapat direvisi bila perlu
+**Status:** ACCEPTED — nilai warna direvisi oleh DEC-031, skala spacing/radius/typography tetap berlaku
 
 ## DEC-023
 
@@ -592,4 +597,54 @@ menggunakan lossless encoding dan mengabaikan kontrol quality.
 **Alasan:** Angka eksplisit dibutuhkan agar UI bisa memberi kontrol nyata; nilai tengah-atas
 menjadi default seimbang untuk JPEG/WebP. Format PNG tidak mendefinisikan lossy quality pada
 jalur lossless ini.
+**Status:** ACCEPTED
+
+## DEC-031
+
+**Tanggal:** 2026-10-02
+**Keputusan:** Palet warna direvisi ke identitas **merah maron + aksen emas**, menggantikan
+biru corporate pada DEC-022. Maron menjadi warna aksi utama; emas HANYA aksen (garis pemisah,
+penanda aktif, ornamen dekoratif). Header dan sidebar memakai permukaan maron gelap dengan
+garis emas, konten tetap pada latar netral terang.
+**Alasan:** Permintaan pengguna. Nuansa maron-emas adalah identitas visual yang diharapkan untuk
+alat kerja di lingkungan kantor resmi, dan maron/emas terbaca sebagai warna institusional yang
+terbuka dan profesional dibandingkan biru generik.
+**Nilai yang ditetapkan:**
+
+| Token | Nilai | Catatan |
+|-------|-------|---------|
+| background | `#f6f4f2` | Netral hangat |
+| surface | `#ffffff` | |
+| surface-muted | `#f0ecea` | |
+| border | `#e6ded9` | Garis rambut |
+| border-strong | `#9c8c86` | Kontrol formulir, kontras ≥ 3:1 |
+| text-primary | `#1d1618` | |
+| text-secondary | `#56494c` | |
+| primary | `#7a1f2b` | Merah maron, warna aksi utama |
+| primary-hover | `#631722` | |
+| primary-active | `#4f1019` | |
+| primary-muted | `#f6e9eb` | |
+| accent | `#d4af37` | Emas, hanya pada permukaan gelap/ornamen |
+| accent-strong | `#8a6a12` | Emas teks di latar terang |
+| accent-muted | `#fbf3df` | |
+| chrome | `#6d1b26` | Header |
+| chrome-deep | `#551420` | Sidebar |
+| success | `#1a6b45` | |
+| warning | `#7d5200` | |
+| danger | `#a8261d` | |
+
+Aturan yang berlaku bersama palet ini:
+
+- Emas tidak pernah menjadi warna tombol, latar besar, atau teks panjang. Perannya hanya
+  ornamen: garis 3 px, penanda item aktif, dan label status singkat.
+- Tidak ada warna ketiga non-semantik; success/warning/danger tetap terpisah dari maron.
+- Rasio kontras tetap diverifikasi: putih di `#7a1f2b` = 10.2:1, teks utama di latar = 7.8:1,
+  `#8a6a12` di `#fbf3df` = 4.6:1, emas di `#551420` = 6.6:1.
+- Dark mode penuh **tidak** dibuat (§21); maron gelap pada header/sidebar bukan dark mode.
+**Alternatif:** Biru corporate (DEC-022) — ditolak karena tidak sesuai identitas yang diminta;
+maron dengan emas sebagai warna tombol utama — ditolak karena emas akan berkonflik dengan
+kontras teks putih dan terlalu berat untuk aksi utama; netral tanpa aksen — ditolak karena
+kurang khas.
+**Dampak:** Semua komponen memakai token warna yang baru. Komponen `Badge` mendapat tone
+`accent` untuk status tool yang sudah siap; sidebar dan header memakai token `chrome`.
 **Status:** ACCEPTED

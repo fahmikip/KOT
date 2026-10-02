@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Badge } from '@/components/Badge'
+import { Badge, type BadgeTone } from '@/components/Badge'
 import { cn } from '@/lib/cn'
 import { DASHBOARD_ROUTE, TOOL_GROUPS, TOOL_STATUS, toolsByGroup, type ToolStatus } from '@/lib/routes'
 import './Sidebar.css'
@@ -10,9 +10,9 @@ export interface SidebarProps {
   onNavigate: () => void
 }
 
-const STATUS_BADGE: Record<ToolStatus, { label: string; tone: 'info' }> = {
-  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'info' },
-  [TOOL_STATUS.READY]: { label: 'Siap digunakan', tone: 'info' }
+const STATUS_BADGE: Record<ToolStatus, { label: string; tone: BadgeTone }> = {
+  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'neutral' },
+  [TOOL_STATUS.READY]: { label: 'Siap digunakan', tone: 'accent' }
 }
 
 /**
@@ -38,6 +38,8 @@ export function Sidebar({ isOpen, onNavigate }: SidebarProps) {
       >
         Dashboard
       </NavLink>
+
+      <div className="sidebar__divider" aria-hidden="true" />
 
       {TOOL_GROUPS.map((group) => (
         <div key={group.id} className="sidebar__group">

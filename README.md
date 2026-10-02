@@ -75,7 +75,7 @@ Rincian lengkap di `FEATURES.md`.
 | `SOURCE_OF_TRUTH.md` | **Pusat kebenaran proyek.** Baca ini lebih dulu |
 | `ARCHITECTURE.md` | Batas modul, aliran data, kontrak, aturan batch & file safety |
 | `FEATURES.md` | Rincian tiap fitur + hal yang belum ditentukan |
-| `DECISIONS.md` | Catatan keputusan. 20 entri, 12 di antaranya belum diputuskan |
+| `DECISIONS.md` | Catatan keputusan. 31 entri (DEC-001 s/d DEC-031) |
 | `FUTURE_FEATURES.md` | Ide fitur yang **tidak** diimplementasikan |
 | `TESTING.md` | Strategi test, fixture yang dibutuhkan, test matrix |
 | `CHANGELOG.md` | Riwayat perubahan |
@@ -85,14 +85,20 @@ Rincian lengkap di `FEATURES.md`.
 ```
 SHELL / NAVIGATION     ← SUDAH ADA (Phase 1)
       ↓
-UI LAYER (5 langkah)   ← belum ada
+UI LAYER (5 langkah)   ← SUDAH ADA untuk Image Tools (Phase 2)
       ↓
-PROCESSING ENGINE      ← belum ada
+PROCESSING ENGINE      ← SUDAH ADA untuk gambar (Sharp, main process)
       ↓
-NATIVE LAYER           ← belum ada
+NATIVE LAYER           ← libvips via Sharp
 ```
 
-Phase 1 hanya mengisi lapisan pertama. Struktur folder riil ada di `ARCHITECTURE.md` §3.
+Struktur folder riil ada di `ARCHITECTURE.md` §3.
+
+## Identitas Visual
+
+Merah maron sebagai warna aksi utama dengan aksen emas pada garis pemisah, penanda menu aktif,
+dan label status. Header dan sidebar memakai permukaan maron gelap; konten tetap terang agar
+tetap nyaman dibaca. Token warna terpusat di `src/renderer/src/styles/tokens.css` (DEC-031).
 
 ## Yang Belum Diputuskan
 
@@ -101,16 +107,14 @@ Phase 1 **tidak lagi terblokir**. Keputusan yang tersisa menyangkut fitur, bukan
 | ID | Item |
 |----|------|
 | DEC-008 | Engine kompresi PDF (Ghostscript? render ulang? lisensi AGPL?) |
-| DEC-009 | Ke mana file output ditulis |
-| DEC-010 | Policy nama file duplikat |
 | DEC-012 | Distribusi & code signing |
-| DEC-013 | Batas ukuran file |
 | DEC-014 | Default PDF → Image (DPI, page size) |
 | DEC-015 | Default Image → PDF (page size) |
 | DEC-016 | ZIP: file saja atau folder |
 | DEC-018 | Menyimpan preferences atau tidak |
 
-Sudah diputuskan: DEC-007 (stack), DEC-011 (testing), DEC-019 (git), dan DEC-021 – DEC-026.
+Sudah diputuskan: DEC-007 (stack), DEC-011 (testing), DEC-019 (git), DEC-021 – DEC-026,
+dan DEC-027 – DEC-031 (mesin gambar, aturan batch, output, palet warna).
 Rincian dan opsi lengkap di `DECISIONS.md`.
 
 ## Environment Developers

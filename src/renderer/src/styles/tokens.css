@@ -1,41 +1,63 @@
 /*
  * Design tokens — KPU Office Tools
  *
- * DEC-022: palet warna, skala spacing, radius, dan typography ditetapkan di Phase 1
- * karena implementasi shell membutuhkan nilai konkret. Nilai ini PROPOSED dan dapat
- * direvisi. Lihat DECISIONS.md.
+ * Identitas visual: merah maron sebagai warna utama, emas sebagai aksen.
+ * Lihat DEC-031 (revisi palet DEC-022).
  *
  * Aturan yang berlaku:
- * - Tanpa gradient.
- * - Satu warna aksen (primary). Warna lain hanya untuk status semantik.
+ * - Tanpa gradient, tanpa glassmorphism, tanpa neon (§14).
+ * - Maron = warna aksi utama. Emas HANYA aksen: garis, penanda aktif, dan
+ *   ornamen. Emas tidak pernah menjadi warna tombol atau latar besar.
+ * - Warna lain hanya untuk status semantik (success/warning/danger).
  * - Semua pasangan warna teks/latar belakang wajib memenuhi WCAG AA (4.5:1).
  * - Font memakai system stack. Tidak ada webfont, tidak ada permintaan jaringan.
  */
 
 :root {
   /* ---------------------------------------------------------------- color */
-  --color-background: #f4f6f8;
+  --color-background: #f6f4f2;
   --color-surface: #ffffff;
-  --color-surface-muted: #eaeef2;
-  --color-border: #d3dae2;
-  --color-border-strong: #b3bfcc;
+  --color-surface-muted: #f0ecea;
+  --color-border: #e6ded9;
+  --color-border-strong: #9c8c86;
 
-  --color-text-primary: #16191d;
-  --color-text-secondary: #4f5b6a;
+  --color-text-primary: #1d1618;
+  --color-text-secondary: #56494c;
   --color-text-inverse: #ffffff;
 
-  --color-primary: #1f5f9e;
-  --color-primary-hover: #17497a;
-  --color-primary-muted: #e3edf7;
+  /* Merah maron — warna aksi utama. */
+  --color-primary: #7a1f2b;
+  --color-primary-hover: #631722;
+  --color-primary-active: #4f1019;
+  --color-primary-muted: #f6e9eb;
+  --color-primary-border: #e3c3c8;
+
+  /* Emas — aksen dekoratif dan penanda aktif. */
+  --color-accent: #d4af37;
+  --color-accent-strong: #8a6a12;
+  --color-accent-muted: #fbf3df;
+  --color-accent-border: #e6d3a0;
+
+  /* Permukaan gelap (header + sidebar). */
+  --color-chrome: #6d1b26;
+  --color-chrome-deep: #551420;
+  --color-chrome-border: rgb(255 255 255 / 14%);
+  --color-text-on-chrome: #ffffff;
+  --color-text-on-chrome-muted: #e0d2ce;
 
   --color-success: #1a6b45;
   --color-success-muted: #e4f1ea;
+  --color-success-border: #b9dcc8;
   --color-warning: #7d5200;
   --color-warning-muted: #fbf0dc;
+  --color-warning-border: #ecd5a4;
   --color-danger: #a8261d;
+  --color-danger-hover: #8c1d16;
   --color-danger-muted: #fbe8e6;
+  --color-danger-border: #eec4c0;
 
-  --color-focus-ring: #1f5f9e;
+  --color-focus-ring: #7a1f2b;
+  --color-focus-ring-on-chrome: #d4af37;
 
   /* ------------------------------------------------------------- spacing */
   --space-1: 4px;
@@ -51,6 +73,12 @@
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* ------------------------------------------------------------ elevation */
+  --shadow-sm: 0 1px 2px rgb(29 22 24 / 6%);
+  --shadow-md: 0 2px 10px rgb(29 22 24 / 8%);
+  --shadow-lg: 0 12px 32px rgb(29 22 24 / 14%);
 
   /* ---------------------------------------------------------- typography */
   --font-family-sans:
@@ -74,11 +102,13 @@
   --line-height-relaxed: 1.7;
 
   --letter-spacing-wide: 0.04em;
+  --letter-spacing-wider: 0.12em;
 
   /* -------------------------------------------------------------- layout */
-  --sidebar-width: 260px;
-  --header-height: 60px;
-  --content-max-width: 960px;
+  --sidebar-width: 264px;
+  --header-height: 64px;
+  --content-max-width: 1080px;
+  --rule-accent-width: 3px;
 
   /* --------------------------------------------------------- breakpoints */
   --breakpoint-md: 768px;

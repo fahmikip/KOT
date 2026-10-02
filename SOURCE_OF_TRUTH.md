@@ -74,7 +74,10 @@ Pegawai yang membutuhkan alat bantu sederhana untuk pekerjaan file dan dokumen.
 
 ```
 src/
-├── main/index.ts          # main process: window, siklus hidup, keamanan
+├── main/
+│   ├── index.ts          # main process: window, siklus hidup, keamanan
+│   └── imageEngine.ts    # pemrosesan gambar (Sharp), dipanggil dari IPC
+├── preload/index.ts      # contextBridge: satu namespace imageTools
 └── renderer/
     ├── index.html
     └── src/
@@ -82,14 +85,16 @@ src/
         ├── components/    # komponen reusable
         ├── layouts/       # shell: Header, Sidebar, Footer, AppLayout
         ├── pages/         # Dashboard, ComingSoon, NotFound
+        ├── features/      # satu folder per tool yang diimplementasikan
         ├── lib/           # routes.ts (sumber tunggal), appInfo, cn
         ├── hooks/         # useMediaQuery
         ├── types/         # tipe bersama
         └── styles/        # tokens.css, global.css
 ```
 
-`features/` dan `services/` **belum dibuat** — Phase 1 tidak punya logika fitur maupun IPC
-(DEC-026). `engine/` dan `preload/` muncul pada phase yang membutuhkannya.
+`features/` dibuat satu per satu mengikuti tool yang diimplementasikan (DEC-026); pada Phase 2
+hanya berisi `image-tools/`. Tidak ada folder `services/` — lapisan itu digantikan oleh preload
+yang sangat sempit (DEC-027).
 
 ### Batasan versi yang harus diketahui
 
@@ -100,12 +105,14 @@ Dua versi terbaru **sengaja tidak dipakai**:
 
 Naik ke salah satunya memerlukan migrasi toolchain tersendiri, bukan upgrade versi biasa.
 
-### Yang belum ada di stack
+### Yang sudah ada di stack
 
-- **Belum ada preload / IPC** (DEC-023). Versi aplikasi di-inject saat build lewat `define`.
+- **Preload / IPC sudah ada** sejak Phase 2 (DEC-027), limited pada Image Tools: satu namespace
+  `imageTools` dengan operasi inspect, process, choose, dan progress. Tidak ada IPC lain.
+- **Library imaging sudah ada**: `sharp` di main process. Library PDF belum ada — masuk-phase
+  saat tool PDF dikerjakan, dan engine PDF masih UNDEFINED (DEC-008).
 - **Belum ada `electron-builder`** atau mekanisme installer apa pun — DEC-012 masih UNDEFINED,
   dan menambahkan packaging berarti membuat keputusan distribusi sepihak.
-- **Belum ada library imaging/PDF** — masuk Phase 2 sesuai urutan tool.
 
 ## SUPPORTED FEATURES
 
@@ -159,6 +166,8 @@ Fitur berikut secara eksplisit **tidak boleh** ada di V1:
 ## UI PRINCIPLES
 
 - professional, clean, modern, minimal, fast, accessible
+- **identitas visual**: merah maron sebagai warna aksi utama dengan aksen emas pada garis
+  pemisah dan penanda aktif; header dan sidebar memakai permukaan maron gelap (DEC-031)
 - **dihindari**: gradient berlebihan, glassmorphism berlebihan, animasi berlebihan, neon,
   card berlebihan, dashboard penuh statistik, tampilan seperti template AI generator
 - pola 5 langkah konsisten untuk semua tool pemroses file (§16):
@@ -226,7 +235,10 @@ Daftar ini menghambat pengerjaan phase berikutnya.
 | DEC-020 | Nama folder project (`KOT`) | PROPOSED |
 
 Sudah diputuskan pada Phase 1 dan tidak lagi menghambat: DEC-021 (HashRouter), DEC-022
-(design tokens), DEC-023 (tanpa preload/IPC), DEC-024 (CSS biasa), DEC-025 (registry route),
-DEC-026 (folder `features/` dan `services/` belum dibuat).
+(design tokens), DEC-023 (tanpa preload/IPC di Phase 1), DEC-024 (CSS biasa), DEC-025 (registry
+route), DEC-026 (folder `features/` dan `services/` belum dibuat).
+
+Sudah diputuskan pada Phase 2 dan tidak lagi menghambat: DEC-027 (Sharp), DEC-028 (aturan
+resize/batch), DEC-029 (tujuan output), DEC-030 (default kualitas), DEC-031 (palet maron-emas).
 
 Rincian dan alasan: `DECISIONS.md`.

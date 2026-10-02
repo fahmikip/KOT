@@ -1,8 +1,13 @@
 import { Link } from 'react-router-dom'
 import { Card } from '@/components/Card'
 import { Badge } from '@/components/Badge'
-import { TOOL_GROUPS, toolsByGroup } from '@/lib/routes'
+import { TOOL_GROUPS, TOOL_STATUS, toolsByGroup, type ToolStatus } from '@/lib/routes'
 import './Dashboard.css'
+
+const STATUS_BADGE: Record<ToolStatus, { label: string; tone: 'neutral' | 'accent' }> = {
+  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'neutral' },
+  [TOOL_STATUS.READY]: { label: 'Siap', tone: 'accent' }
+}
 
 /**
  * Dashboard.
@@ -38,7 +43,9 @@ export function Dashboard() {
                     <Link className="dashboard__tool-link" to={tool.path}>
                       {tool.label}
                     </Link>
-                    <Badge tone="info">Coming Soon</Badge>
+                    <Badge tone={STATUS_BADGE[tool.status].tone}>
+                      {STATUS_BADGE[tool.status].label}
+                    </Badge>
                   </li>
                 ))}
               </ul>
