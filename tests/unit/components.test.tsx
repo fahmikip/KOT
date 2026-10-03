@@ -147,15 +147,9 @@ describe('FileDropZone (Phase 1 §12 — UI saja)', () => {
     expect(area.className).not.toContain('dropzone__area--dragging')
   })
 
-  it('menampilkan selected state berisi nama file', () => {
+  it('tidak memakai input browser yang tidak memberi path lokal di aplikasi desktop', () => {
     render(<FileDropZone />)
-    const input = document.querySelector('input[type="file"]') as HTMLInputElement
-
-    const file = new File(['isi'], 'Dokumen_Rapat.pdf', { type: 'application/pdf' })
-    Object.defineProperty(input, 'files', { value: [file], configurable: true })
-    input.dispatchEvent(new Event('change', { bubbles: true }))
-
-    expect(screen.getByText('Dokumen_Rapat.pdf')).toBeInTheDocument()
+    expect(document.querySelector('input[type="file"]')).toBeNull()
   })
 
   it('tidak mengirim file ke mana pun (Phase 1 §12)', () => {

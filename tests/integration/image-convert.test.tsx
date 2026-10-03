@@ -47,6 +47,18 @@ describe('Image Converter', () => {
     expect(screen.getByRole('radio', { name: /WEBP/ })).toBeInTheDocument()
   })
 
+  it('membuka dialog native saat area Drop file di sini ditekan', async () => {
+    renderAppAt('/image/convert')
+    tools.chooseImages.mockResolvedValue([jpegFile])
+    tools.inspect.mockResolvedValue([inspection('foto.jpg', 'jpeg', false)])
+
+    await userEvent.click(screen.getByRole('button', { name: /Drop file di sini/ }))
+
+    await screen.findByText('2. Atur opsi')
+    expect(tools.chooseImages).toHaveBeenCalledTimes(1)
+    expect(tools.inspect).toHaveBeenCalledWith([jpegFile])
+  })
+
   it('menonaktifkan format tujuan yang sama dengan format gambar', async () => {
     renderAppAt('/image/convert')
     await selectFiles([transparentPng], [inspection('logo.png', 'png', false)])

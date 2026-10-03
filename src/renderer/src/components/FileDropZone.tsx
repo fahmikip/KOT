@@ -1,13 +1,11 @@
-import { useCallback, useId, useRef, useState, type ChangeEvent, type DragEvent } from 'react'
+import { useCallback, useId, useState, type DragEvent } from 'react'
 import { cn } from '@/lib/cn'
 import './FileDropZone.css'
 
 export interface FileDropZoneProps {
-  /** Dipanggil saat user memilih atau drop file. Hanya menerima objek File — tidak membaca isi file. */
-  onFilesSelected?: (files: File[]) => void
-  accept?: string
-  multiple?: boolean
   onDroppedFiles?: (files: File[]) => void
+  /** Membuka pemilih native agar aplikasi desktop mendapat path file yang dapat diproses. */
+  onChooseFiles?: () => void
   disabled?: boolean
   className?: string
 }
@@ -25,34 +23,17 @@ export interface FileDropZoneProps {
  * masih COMING SOON. Komponen ini diminta eksplisit sebagai fondasi UI.
  */
 export function FileDropZone({
-  onFilesSelected,
-  accept,
-  multiple = false,
   onDroppedFiles,
+  onChooseFiles,
   disabled = false,
   className
 }: FileDropZoneProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [selectedNames, setSelectedNames] = useState<string[]>([])
   const hintId = useId()
 
   const openFilePicker = useCallback(() => {
-    if (!disabled) {
-      inputRef.current?.click()
-    }
-  }, [disabled])
-
-  const handleInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(event.target.files ?? [])
-      if (files.length > 0) {
-        setSelectedNames(files.map((file) => file.name))
-        onFilesSelected?.(files)
-      }
-    },
-    [onFilesSelected]
-  )
+    if (!disabled) onChooseFiles?.()
+  }, [disabled, onChooseFiles])
 
   const handleDrop = useCallback(
     (event: DragEvent<HTMLButtonElement>) => {
@@ -64,12 +45,10 @@ export function FileDropZone({
 
       const files = Array.from(event.dataTransfer.files)
       if (files.length > 0) {
-        setSelectedNames(files.map((file) => file.name))
         if (onDroppedFiles) onDroppedFiles(files)
-        else onFilesSelected?.(files)
       }
     },
-    [disabled, onFilesSelected, onDroppedFiles]
+    [disabled, onDroppedFiles]
   )
 
   const handleDragOver = useCallback(
@@ -111,26 +90,6 @@ export function FileDropZone({
         <span className="dropzone__action">Pilih File</span>
       </button>
 
-      <input
-        ref={inputRef}
-        type="file"
-        className="dropzone__input"
-        accept={accept}
-        multiple={multiple}
-        onChange={handleInputChange}
-        tabIndex={-1}
-        aria-hidden="true"
-      />
-
-      {selectedNames.length > 0 ? (
-        <ul className="dropzone__selected" aria-live="polite">
-          {selectedNames.map((name) => (
-            <li key={name} className="dropzone__selected-item">
-              {name}
-            </li>
-          ))}
-        </ul>
-      ) : null}
     </div>
   )
 }

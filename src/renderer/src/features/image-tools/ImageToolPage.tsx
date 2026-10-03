@@ -10,7 +10,6 @@ interface SelectedFile extends ImageFileRef { valid?: boolean; width?: number; h
 
 interface ImageToolPageProps { operation: Operation }
 
-const ACCEPT = '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp'
 const TARGET_OPTIONS: Array<{ value: ImageTargetFormat; label: string; hint: string }> = [
   { value: 'png', label: 'PNG', hint: 'Lossless, mendukung transparansi' },
   { value: 'jpg', label: 'JPG', hint: 'Ringan, tidak mendukung transparansi' },
@@ -166,7 +165,7 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
       <section className="image-tool__section" aria-labelledby="select-heading">
         <h2 id="select-heading">1. Pilih gambar</h2>
         <div onDrop={handleDropZone} onDragOver={(event) => event.preventDefault()}>
-          <FileDropZone accept={ACCEPT} multiple disabled={busy} onDroppedFiles={handleDrop} />
+          <FileDropZone disabled={busy} onChooseFiles={() => void addFromPicker(false)} onDroppedFiles={handleDrop} />
         </div>
         <div className="image-tool__picker-actions">
           <Button disabled={busy} onClick={() => void addFromPicker(false)}>Pilih file</Button>
