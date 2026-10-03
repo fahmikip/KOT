@@ -1,8 +1,8 @@
 # ARCHITECTURE — KPU Office Tools
 
-> **STATUS: Phase 2 selesai untuk Image Compressor dan Image Resizer.** Struktur folder di bawah adalah struktur **sesuai nyatanya**,
-> bukan usulan. Lapisan `engine/` dan `preload/` **belum ada** — keduanya muncul pada phase
-> yang benar-benar membutuhkan. Lihat DEC-027�030.
+> **STATUS: Phase 3 — Image Converter selesai; Image → PDF tertahan di DEC-015.** Struktur folder di bawah
+> adalah struktur **sesuai nyatanya**, bukan usulan. `src/preload/` dan engine gambar sudah ada
+> sejak Phase 2. Lihat DEC-027–DEC-033.
 
 ---
 
@@ -57,30 +57,37 @@
 ```
 
 > **Realisasi Phase 1:** dua lapisan teratas (shell + navigasi) sudah ada. Empat lapisan di
-> bawahnya — UI layer per tool, processing engine, dan native layer — **belum ada**, karena
-> Phase 1 tidak memproses file. Kontrak IPC di bawah adalah rancangan untuk phase engine.
+> bawahnya sudah ada untuk image tools (Phase 2–3): `features/image-tools/`, engine di
+> `src/main/imageEngine.ts`, preload terbatas, dan native layer lewat libvips (Sharp).
 
-### Kontrak IPC (rancangan, belum diimplementasikan)
+### Kontrak IPC (nyata sejak Phase 2)
 
 Bentuk IPC sudah diputuskan: **typed request/response + progress events** lewat Electron
-`contextBridge`. Prinsip yang sudah ditegakkan di Phase 1, dan wajib tetap berlaku:
+`contextBridge`. Postur keamanan tidak berubah dari Phase 1:
 
-| Prinsip | Nilai di Phase 1 |
-|---------|------------------|
+| Prinsip | Nilai sekarang |
+|---------|----------------|
 | `contextIsolation` | `true` |
 | `nodeIntegration` | `false` |
 | `sandbox` | `true` |
-| preload script | **tidak ada** (DEC-023) |
-| Channel yang di-expose | **nol** |
+| preload script | `src/preload/index.ts` — satu namespace `window.imageTools` (DEC-027) |
+| Channel yang di-expose | hanya channel `image:*` |
 | Renderer menyentuh fs langsung | tidak bisa, dan tidak dicoba |
 
-Channel yang akan ada saat phase engine (nama final belum ditetapkan):
+Channel yang benar-benar ada:
 
 ```
-file:read-list        file:write          file:destination   file:validate
-tool:<toolId>:run     tool:<toolId>:cancel
-engine:progress       engine:progress:detail
+image:choose        image:choose-folder    image:choose-destination
+image:inspect       image:process           image:progress
 ```
+
+Belum ada channel generik `tool:<toolId>:run`, `file:write`, atau `engine:progress:detail`.
+Tool baru memakai namespace sendiri agar bridge yang sudah dipakai tidak perlu diperlebar.
+Nama channel final untuk tool non-image masih `UNDEFINED`.
+
+Otorisasi path ditegakkan di main process: `image:process` hanya menerima file yang sudah
+dipilih user lewat dialog (`authorizedImages`) dan folder tujuan yang baru disetujui user
+(`authorizedDestinations`). Renderer tidak boleh mengirim path bebas.
 
 ## 3. Struktur Folder (nyata — hasil Phase 1)
 
@@ -123,10 +130,8 @@ Folder yang **sengaja belum ada** dan alasannya:
 
 | Folder | Alasan belum ada |
 |--------|------------------|
-| `src/preload/` | Tidak ada IPC di Phase 1 (DEC-023). Tidak ada yang perlu diekspos. |
-| `src/engine/` | Belum ada tool yang memproses file. slated untuk Phase 2. |
-| `src/renderer/src/features/` | Phase 1 tidak punya logika fitur. Dibuat per-tool (§4 Phase 1, DEC-026) |
-| `src/renderer/src/services/` | Belum ada service; muncul saat IPC/engine pertama ada |
+| `src/engine/` | Engine gambar langsung di `src/main/imageEngine.ts` (DEC-027). Folder terpisah belum perlu karena baru ada satu engine. |
+| `src/renderer/src/services/` | Renderer memanggil `window.imageTools` langsung; tidak ada service layer yang perlu abstraksi |
 | `docs/` | Dokumentasi tetap di root repository |
 
 Aturan yang berlaku:
@@ -138,8 +143,9 @@ Aturan yang berlaku:
 
 ## 4. Kontrak Modul (Module Contract)
 
-Setiap modul engine mengikuti bentuk ini. Modul ini **belum ada** — kontrak ini diuji
-bersama saat phase engine pertama. Batas tanggung jawabnya sudah tetap.
+Setiap modul engine mengikuti bentuk ini. Bentuk ini sudah diimplementasikan oleh
+`src/main/imageEngine.ts` (Phase 2–3) dengan penyesuaian minimum yang tercatat di bawah.
+Batas tanggung jawabnya tidak berubah.
 
 ```
 Input:
@@ -159,7 +165,7 @@ Progress:
 
 ItemResult:
   - source
-  - status: 'success' | 'failed' | 'cancelled'
+  - status: 'success' | 'failed' | 'skipped'
   - outputPath?      # hanya jika sukses
   - error?           # EngineError (technical), bukan teks untuk user
 ```
@@ -172,6 +178,16 @@ Aturan kontrak:
   `EngineError`; pemetaan ke pesan user terjadi di UI layer.
 - Modul harus menghormati `signal`. Cancel harus menghentikan pekerjaan dan tidak meninggalkan
   file output setengah jadi.
+
+#### Penyimpangan yang sudah terjadi di `imageEngine.ts`
+
+| Kontrak ideal | Kenyataan sekarang | Alasan |
+|----------------|--------------------|--------|
+| `EngineError` terpisah | Error dipetakan ke pesan user di dalam engine (`mapError`), status `failed` menyimpan `error` | Bentuk ini sudah dipakai dan diuji sejak Phase 2; menambah lapisan `EngineError` sekarang berarti menulis ulang kontrak tanpa diminta |
+| `signal` / cancel | Belum ada channel cancel | `UNDEFINED` (§8) dan belum ada tool yang memerlukannya di V1 |
+| `cancelled` | Tidak dipakai; digantikan `skipped` untuk file yang tidak diproses karena kondisi input (format sama, alpha → JPG) | `skipped` bukan kegagalan, dan alasannya ditampilkan ke user |
+| `summary` terpisah | UI menghitung dari `results[]` | Batch selesai sinkron per file; tidak ada kebutuhan state summary terpisah |
+| `onItemResult` streaming | `onProgress` menerima `result` per file (`ImageProgress.result`) | Bridge tetap sempit — satu channel progress |
 
 ## 5. Alur Data — 5 Langkah (§16)
 
@@ -262,14 +278,14 @@ Aturan yang wajib berlaku di semua modul:
 
 | Aturan | Implementasi yang diharapkan |
 |--------|------------------------------|
-| Tidak overwrite file asli | Output dipisahkan dari input; `OutputTarget` berbeda |
-| Selalu hasil file baru | Prefix/suffix default pada nama output |
-| Nama output jelas | Pola nama <nama-asli>[-suffix].<ext>, deterministik |
-| Duplikat ditangani | Lihat DEC-010 — belum diputuskan |
+| Tidak overwrite file asli | Output ditulis ke folder tujuan pilihan user, bukan ke folder input |
+| Selalu hasil file baru | Suffix operasi: `-compressed`, `-resized`, `-converted` (DEC-029) |
+| Nama output jelas | Pola `<nama-asli>-<operasi>[ (n)].<ext-tujuan>`, deterministik |
+| Duplikat ditangani | Auto-suffix ` (2)`, ` (3)`, dst. lewat reservasi `open(..., 'wx')` (DEC-010/DEC-029) |
 | Karakter invalid ditangani | Sanitasi nama file cross-platform (`<>:"/\|?*`, reserved Windows names) |
 | File kosong ditangani | Validasi ukuran > 0 sebelum proses |
 | File corrupt ditangani | Validasi signature/parse sebelum proses |
-| File besar ditangani | Lihat DEC-013 — batas belum diputuskan |
+| File besar ditangani | Batas 100 MB per file, 100 file per batch, raster 100 megapixel (DEC-013) |
 
 Sanitasi nama file Windows wajib menyertakan reserved names: `CON`, `PRN`, `AUX`, `NUL`,
 `COM1`–`COM9`, `LPT1`–`LPT9`, dan nama yang berakhir dengan titik atau spasi.
@@ -384,15 +400,18 @@ Tidak ada route lain. Menu lain menunggu persetujuan.
 
 ### Belum defined
 
-- ~~mekanisme IPC konkret~~ → sudah diputuskan bentuknya, **channel & payload belum final**
-- ~~struktur folder final~~ → sudah ada untuk Phase 1; `features/` & `services/` menyusul
+- ~~mekanisme IPC konkret~~ → sudah ada untuk image tools (Phase 2, DEC-027); channel untuk
+  tool non-image belum final
+- ~~struktur folder final~~ → sudah ada; `features/image-tools/` dipakai tiga tool gambar
 - lokasi & format developer log
 - mekanisme cancellation konkret (`AbortSignal` via IPC)
 - timeout per file
 - strategi worker pool / queue
 - strategi preview untuk PDF (render halaman: perlu library, belum diputuskan)
 - persistensi preferences (DEC-018)
-- choice engine: PDF (DEC-008) dan imaging
-- struktur `features/<tool>/` per tool — menunggu implementasi tool pertama
+- choice engine PDF (DEC-008) dan **library generator PDF untuk Image → PDF** — `package.json`
+  belum punya dependency PDF sama sekali; ini ikut menghambat Image → PDF
+- default page size, margin, DPI embedding, dan penanganan orientasi EXIF untuk Image → PDF
+  (DEC-015) — **menghambat Phase 3**
 - decrypt PDF terenkripsi (belum ada di spesifikasi produk)
 - library archive/encryption untuk ZIP (belum ada di spesifikasi produk)

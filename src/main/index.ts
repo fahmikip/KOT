@@ -72,7 +72,7 @@ function registerImageHandlers(): void {
     return Promise.all(files.map(async (file) => {
       try {
         const metadata = await validateImageFile(file)
-        return { name: file.name, valid: true, size: file.size, width: metadata.width, height: metadata.height, format: metadata.format }
+        return { name: file.name, valid: true, size: file.size, width: metadata.width, height: metadata.height, format: metadata.format, hasAlpha: metadata.hasAlpha === true }
       } catch (error) {
         console.error(`[image:inspect] ${file.name}`, error)
         const message = error instanceof Error ? error.message : ''
@@ -82,7 +82,7 @@ function registerImageHandlers(): void {
   })
   ipcMain.handle('image:choose-destination', (event) => chooseDestination(event.sender.id))
   ipcMain.handle('image:process', async (event, request: ProcessRequest) => {
-    if (!request || !['compress', 'resize'].includes(request.operation)) throw new Error('Invalid operation')
+    if (!request || !['compress', 'resize', 'convert'].includes(request.operation)) throw new Error('Invalid operation')
     const allowed = authorizedImages.get(event.sender.id) ?? new Set<string>()
     if (!Array.isArray(request.files) || request.files.length > MAX_BATCH_FILES || request.files.some((file) => !file || typeof file.path !== 'string' || !allowed.has(resolve(file.path))) || !request.destination || resolve(request.destination) !== authorizedDestinations.get(event.sender.id)) throw new Error('Unapproved image path or destination')
     const sender = event.sender

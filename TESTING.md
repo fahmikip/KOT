@@ -1,9 +1,10 @@
 # TESTING — KPU Office Tools
 
 > **STATUS: AKTIF.** Framework dipilih: **Vitest 5 + Testing Library + jsdom** (DEC-011).
-> Phase 2: 92 test pada 8 file (engine gambar dan UI tools ditambahkan).
+> Phase 3: 108 test pada 9 file (Image Converter: engine + UI).
 >
-> Cakupan mencakup shell Phase 1, image engine, validasi format, batch, dan interaksi Image Tools.
+> Cakupan mencakup shell Phase 1, image engine (compress/resize/convert), validasi format,
+> batch, dan interaksi Image Tools.
 
 ---
 
@@ -15,7 +16,7 @@ Command                                        Hasil
 npx eslint .                                    PASS (0 error, 0 warning)
 npx tsc --noEmit -p tsconfig.node.json          PASS
 npx tsc --noEmit -p tsconfig.web.json           PASS
-npx vitest run                                  PASS — 8 files, 92 tests
+npx vitest run                                  PASS — 9 files, 108 tests
 npm run build                                   PASS
 Electron 44.5.1 (runtime nyata)                 PASS — 0 console error
 ```
@@ -35,8 +36,9 @@ terresolve, navigasi hash, dan route 404. **0 console error, 0 renderer crash.**
 | `unit/routes.test.ts` | 9 | Registry route: path unik, group, status, urutan |
 | `integration/responsive.test.tsx` | 8 | Mobile + desktop, drawer, tabel |
 | `unit/error-handling.test.tsx` | 6 | ErrorBoundary, pesan user vs teknis, app info |
-| `unit/image-engine.test.ts` | 10 | Image codec dan engine |
-| **Total** | **92** | **8 file** |
+| `unit/image-engine.test.ts` | 21 | Image codec, engine compress/resize, dan Image Converter |
+| `integration/image-convert.test.tsx` | 5 | Image Converter: pilihan format, peringatan alpha, payload, hasil |
+| **Total** | **108** | **9 file** |
 
 ---
 
@@ -62,18 +64,24 @@ Struktur yang dipakai Phase 1:
 
 ```
 tests/
-├── setup.ts                  # jest-dom, auto-cleanup, stub matchMedia
+├── setup.ts                  # jest-dom, auto-cleanup, stub matchMedia, mock window.imageTools
 ├── helpers/renderApp.tsx     # render aplikasi dengan MemoryRouter
 ├── unit/
-│   ├── routes.test.ts            9 test
-│   ├── components.test.tsx      16 test
-│   └── error-handling.test.tsx    6 test
+│   ├── routes.test.ts                 9 test
+│   ├── components.test.tsx           16 test
+│   ├── error-handling.test.tsx         6 test
+│   └── image-engine.test.ts           21 test
 └── integration/
-    ├── navigation.test.tsx      23 test
-    ├── shell.test.tsx           10 test
-    ├── responsive.test.tsx       8 test
-    └── accessibility.test.tsx   10 test
+    ├── navigation.test.tsx           23 test
+    ├── shell.test.tsx                10 test
+    ├── responsive.test.tsx            8 test
+    ├── accessibility.test.tsx        10 test
+    └── image-convert.test.tsx         5 test
 ```
+
+> Catatan Windows: libvips (Sharp) menahan file input sampai instance di-GC, sehingga file
+> `.webp` kadang masih terkunci saat temp dir dihapus. Cleanup test dibuat best-effort agar
+> hasil test tidak bergantung pada timing garbage collector.
 
 ## 3. Fixture yang Wajib Dibuat
 
@@ -162,16 +170,25 @@ implementasi**, bukan sekarang (karena tidak ada tool untuk membuatnya).
 | IR-06 | Batch 20 file | semua sukses |
 | IR-07 | Rasio ekstrem (panorama 5000x200) | tidak error |
 
-### 4.3 Image Converter
+### 4.3 Image Converter — semua PASS (Phase 3)
 
-| ID | Kasus | Expected |
-|----|-------|----------|
-| CV-01 | JPG → PNG | output PNG valid |
-| CV-02 | PNG → JPG | output JPG valid |
-| CV-03 | WEBP → JPG | output JPG valid |
-| CV-04 | PNG transparent → JPG | tidak crash, alpha ditangani (DIPERLUKAN) |
-| CV-05 | Input = output format | ditolak atau di-handle jelas |
-| CV-06 | File corrupt | gagal dengan pesan ramah |
+| ID | Kasus | Expected | Hasil |
+|----|-------|----------|-------|
+| CV-01 | JPG → PNG | output PNG valid | PASS |
+| CV-02 | PNG → JPG | output JPG valid | PASS |
+| CV-03 | WEBP → JPG | output JPG valid | PASS |
+| CV-04 | PNG transparent → JPG | tidak crash, alpha ditangani | PASS — `skipped`, **tidak** di-flatten (DEC-033) |
+| CV-05 | Input = output format | ditolak atau di-handle jelas | PASS — `skipped` + radio option nonaktif di UI |
+| CV-06 | File corrupt | gagal dengan pesan ramah | PASS — `failed`, batch lanjut |
+
+Tambahan yang diuji di Phase 3: dimensi & rasio aspek tidak berubah, file asli tidak berubah,
+nama output `-converted.<ext-tujuan>`, auto-suffix benturan (` (2)`), target format tidak valid,
+WEBP → PNG, transparan → WEBP, dan progress `completed/total` pada batch campuran.
+
+Belum diuji (butuh keputusan atau tooling lain):
+
+- I2P-01 s/d I2P-09 — seluruhnya tertahan DEC-015 dan pemilihan library PDF.
+- Preview visual piksel (`I2P` preview halaman) — butuh renderer PDF.
 
 ### 4.4 PDF Compressor
 
@@ -364,10 +381,11 @@ batch, dan kasus error file per-item.
 |------|--------|
 | Strategi test | DOKUMENTED |
 | Framework | **AKTIF — Vitest 5 + Testing Library + jsdom** (DEC-011) |
-| Test files | **8 file, 92 test, semua lulus** (Phase 2) |
-| Cakupan | Shell, routing, a11y, image engine, batch dan codec |
-| Test engine / processing | **BELUM ADA** — engine-nya belum ada |
-| Fixture files | BELUM ADA — butuh tool untuk membuatnya (phase engine) |
+| Test files | **9 file, 108 test, semua lulus** (Phase 3) |
+| Cakupan | Shell, routing, a11y, image engine (compress/resize/convert), batch, codec |
+| Test engine / processing | **AKTIF** — `tests/unit/image-engine.test.ts` memakai Sharp nyata + temp dir |
+| Test UI tool | **AKTIF** — `tests/integration/image-convert.test.tsx` (Image Converter) |
+| Fixture files | Dibuat on-the-fly di test (Sharp, temp dir OS). `tests/fixtures/` masih kosong |
 | E2E / browser test | BELUM ADA |
 | CI | UNDEFINED — belum ada konfigurasi CI |
 

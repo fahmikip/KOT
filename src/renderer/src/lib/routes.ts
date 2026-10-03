@@ -79,8 +79,8 @@ export const TOOLS: readonly ToolDefinition[] = [
     path: '/image/convert',
     group: 'image-tools',
     description: 'Mengubah format gambar.',
-    plannedCapabilities: ['JPG ke PNG', 'PNG ke JPG', 'WEBP ke JPG'],
-    status: TOOL_STATUS.COMING_SOON
+    plannedCapabilities: ['JPG ke PNG', 'PNG ke JPG', 'WEBP ke JPG', 'Pemrosesan batch'],
+    status: TOOL_STATUS.READY
   },
   {
     id: 'pdf-compress',

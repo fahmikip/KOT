@@ -61,6 +61,8 @@ Status yang dipakai:
 | DEC-029 | Output: suffix `-compressed`/`-resized`, duplikat auto-suffix | ACCEPTED (Phase 2) |
 | DEC-030 | Default kualitas kompresi 80, PNG lossless | ACCEPTED (Phase 2) |
 | DEC-031 | **Palet warna: merah maron + aksen emas** | **ACCEPTED** |
+| DEC-032 | Kualitas encoder untuk Image Converter | ACCEPTED (Phase 3) |
+| DEC-033 | Alpha → JPG saat Image Converter | PARTIAL (Phase 3: interim dilewati) |
 
 ---
 
@@ -648,3 +650,43 @@ kurang khas.
 **Dampak:** Semua komponen memakai token warna yang baru. Komponen `Badge` mendapat tone
 `accent` untuk status tool yang sudah siap; sidebar dan header memakai token `chrome`.
 **Status:** ACCEPTED
+
+## DEC-032
+
+**Tanggal:** 2026-10-03
+**Keputusan:** Image Converter memakai quality encoder default Sharp (80) untuk target JPG dan
+WEBP, dan lossless untuk PNG. Tidak ada slider kualitas khusus di halaman konversi.
+**Alasan:** §21 instruksi phase hanya menyebut "format tujuan" — tidak menyebut kontrol
+mutu. Menambah slider berarti membuat default yang tidak diminta; memakai default encoder
+adalah pilihan paling minim asumsi. Angka 80 juga sudah menjadi default Image Compressor
+(DEC-030), sehingga tidak ada dua angka berbeda untuk hal yang sama.
+**Alternatif:** (a) slider kualitas dengan default 80 — ditolak karena UI dan defaultnya tidak
+diperintahkan; (b) selalu lossless — mustahil untuk JPG lossy; (c) kualitas 100 — hasil besar
+tanpa alasan.
+**Dampak:** PNG → JPG bersifat lossy; hasilnya tidak identik dengan sumber. Konversi ke PNG
+lossless. **Belum decided:** apakah user butuh kontrol kualitas per konversi. Bila ya, slider
+dapat ditambahkan tanpa mengubah engine.
+**Status:** ACCEPTED (Phase 3) — cabut bila user meminta kontrol kualitas.
+
+## DEC-033
+
+**Tanggal:** 2026-10-03
+**Keputusan:** PNG/WEBP yang memiliki alpha **tidak boleh** diam-diam flatten saat konversi ke
+JPG. Pada Phase 3 file tersebut berstatus `skipped` dengan alasan yang ditampilkan ke user, dan
+UI memperingatkan jumlahnya sebelum proses berjalan. Konversi ke PNG dan WEBP tidak dibatasi alpha.
+**Alasan:** `FEATURES.md` §3 menanyakan warna latar untuk alpha dan `TESTING.md` CV-04
+menandai kasus ini sebagai `(DIPERLUKAN)`. Memakai putih atau hitam secara sepihak berisiko
+menghapus logo, watermark transparan, atau area yang seharusnya kosong.
+**Alternatif & konsekuensi:**
+
+| Opsi | Mekanisme | Konsekuensi |
+|------|-----------|-------------|
+| A | Latar putih otomatis | Risiko: transparansi dianggap "kotor" dan hilang tanpa jejak |
+| B | Latar hitam otomatis | Risiko lebih tinggi untuk logo/watermark gelap |
+| C | User memilih warna latar | Butuh UI tambahan dan keputusan default-nya |
+| D | Lewati file, beri tahu | Tidak merusak data; user tahu persis apa yang terjadi |
+
+**Dampak:** Batch campuran PNG-transparan + JPG ke target JPG menghasilkan beberapa `skipped`.
+Ringkasan hasil menampilkan jumlah "dilewati" agar tidak terlihat seperti kegagalan.
+**Status:** PARTIAL — opsi A/B/C masih `UNDEFINED`; implementasi saat ini memakai D sebagai
+interim yang tidak merusak data. Segera setelah user memilih opsi, DEC-033 ditutup.

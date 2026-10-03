@@ -12,15 +12,18 @@ export interface ImageResizeOptions {
   maintainAspectRatio: true
 }
 
+export type ImageTargetFormat = 'png' | 'jpg' | 'webp'
+
 export interface ImageProcessResult {
   name: string
-  status: 'success' | 'failed'
+  status: 'success' | 'failed' | 'skipped'
   outputPath?: string
   originalSize: number
   outputSize?: number
   width?: number
   height?: number
   error?: string
+  reason?: string
 }
 
 export interface ImageInspection {
@@ -30,6 +33,7 @@ export interface ImageInspection {
   width?: number
   height?: number
   format?: string
+  hasAlpha?: boolean
   error?: string
 }
 
@@ -46,11 +50,12 @@ export interface ImageToolBridge {
   chooseDestination(): Promise<string | null>
   inspect(files: ImageFileRef[]): Promise<ImageInspection[]>
   process(request: {
-    operation: 'compress' | 'resize'
+    operation: 'compress' | 'resize' | 'convert'
     files: ImageFileRef[]
     quality: number
     destination: string
     resize?: ImageResizeOptions
+    convert?: { target: ImageTargetFormat }
   }): Promise<ImageProcessResult[]>
   onProgress(callback: (progress: ImageProgress) => void): () => void
 }

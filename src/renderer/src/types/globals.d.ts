@@ -15,15 +15,18 @@ declare global {
     maintainAspectRatio: true
   }
 
+  type ImageTargetFormat = 'png' | 'jpg' | 'webp'
+
   type ImageProcessResult = {
     name: string
-    status: 'success' | 'failed'
+    status: 'success' | 'failed' | 'skipped'
     outputPath?: string
     originalSize: number
     outputSize?: number
     width?: number
     height?: number
     error?: string
+    reason?: string
   }
 
   type ImageInspection = {
@@ -33,6 +36,7 @@ declare global {
     width?: number
     height?: number
     format?: string
+    hasAlpha?: boolean
     error?: string
   }
 
@@ -49,7 +53,7 @@ declare global {
       chooseFolder(): Promise<ImageFileRef[]>
       chooseDestination(): Promise<string | null>
       inspect(files: ImageFileRef[]): Promise<ImageInspection[]>
-      process(request: { operation: 'compress' | 'resize'; files: ImageFileRef[]; quality: number; destination: string; resize?: ImageResizeOptions }): Promise<ImageProcessResult[]>
+      process(request: { operation: 'compress' | 'resize' | 'convert'; files: ImageFileRef[]; quality: number; destination: string; resize?: ImageResizeOptions; convert?: { target: ImageTargetFormat } }): Promise<ImageProcessResult[]>
       onProgress(callback: (progress: ImageProgress) => void): () => void
     }
   }

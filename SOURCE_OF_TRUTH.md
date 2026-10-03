@@ -36,7 +36,9 @@ Product version : V1
 App version     : 0.1.0   (dari package.json, di-inject saat build)
 ```
 
-Phase 1 membangun application shell; Phase 2 menambahkan Image Compressor dan Image Resizer.
+Phase 1 membangun application shell; Phase 2 menambahkan Image Compressor dan Image Resizer;
+Phase 3 menambahkan Image Converter. **Image → PDF tertahan** di Phase 3 karena DEC-015 belum
+diputuskan, sehingga tidak ada kode, tombol, atau alur yang dibuat untuknya.
 
 ## PURPOSE
 
@@ -137,15 +139,16 @@ Rincian di `FEATURES.md` (sumber: §8–§13).
 
 > Tidak ada fitur lain. Tidak boleh ada tombol, menu, atau modul di luar tabel ini.
 
-### IMAGE TOOLS STATUS (Phase 2)
+### IMAGE TOOLS STATUS (Phase 3)
 
 | Tool | Status | Detail |
 |------|--------|--------|
 | Image Compressor | IMPLEMENTED | Lokal via Sharp; JPG/JPEG/PNG/WEBP; quality JPEG/WEBP default 80; PNG lossless |
 | Image Resizer | IMPLEMENTED | Lebar/tinggi/persentase; rasio dijaga; upscale ditolak |
+| Image Converter | IMPLEMENTED | Target PNG/JPG/WEBP; dimensi dan rasio aspek tidak berubah; format sama dan alpha→JPG dilewati |
 
 Image Tools menerima maksimal 100 file, ukuran maksimal 100 MB per file, dan batas raster
-100 megapixel. Batch berjalan sekuensial. User memilih satu folder output per batch. Output memakai suffix `-compressed` atau `-resized`; benturan diberi suffix ` (2)`, ` (3)`, dan seterusnya. Output tidak menimpa input. Implementasi memakai preload
+100 megapixel. Batch berjalan sekuensial. User memilih satu folder output per batch. Output memakai suffix `-compressed`, `-resized`, atau `-converted`; benturan diberi suffix ` (2)`, ` (3)`, dan seterusnya. Output tidak menimpa input. Implementasi memakai preload
 IPC terbatas dan Sharp pada main process; tidak ada upload atau panggilan jaringan.
 
 ## NON-GOALS
@@ -240,5 +243,11 @@ route), DEC-026 (folder `features/` dan `services/` belum dibuat).
 
 Sudah diputuskan pada Phase 2 dan tidak lagi menghambat: DEC-027 (Sharp), DEC-028 (aturan
 resize/batch), DEC-029 (tujuan output), DEC-030 (default kualitas), DEC-031 (palet maron-emas).
+
+Sudah diputuskan pada Phase 3: DEC-032 (kualitas encoder konversi) dan DEC-033 (transparansi
+alpha saat konversi ke JPG — interim: file dilewati, bukan di-flatten).
+
+**Belum diputuskan dan menghambat:** DEC-015 (page size, margin, DPI, dan orientasi EXIF untuk
+Image → PDF). Selama DEC-015 terbuka, Image → PDF tetap `COMING_SOON`.
 
 Rincian dan alasan: `DECISIONS.md`.

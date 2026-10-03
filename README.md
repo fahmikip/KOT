@@ -11,14 +11,16 @@ khususnya pekerjaan yang terkait dengan **foto, PDF, dokumen, dan file**.
 ## Status Project
 
 ```
-FASE     : Phase 2 — Image Tools (SELESAI)
+FASE     : Phase 3 — Image Converter (SELESAI); Image → PDF TERTAHAN (DEC-015)
 STACK    : Electron 44 + TypeScript 5.9 + React 19  (DEC-007, Opsi A)
-TEST     : 92 test lulus (Vitest + Testing Library)
+TEST     : 108 test lulus (Vitest + Testing Library)
 BUILD    : out/ — bisa dijalankan
-FITUR    : 2 dari 13 — Image Compressor + Image Resizer
+FITUR    : 3 dari 13 — Image Compressor + Image Resizer + Image Converter
 ```
 
-**Image Compressor dan Image Resizer memproses gambar secara lokal.** Sebelas tool lainnya masih Coming Soon.
+**Image Compressor, Image Resizer, dan Image Converter memproses gambar secara lokal.**
+Sepuluh tool lainnya masih Coming Soon. **Image → PDF tertahan** karena default page size,
+margin, dan DPI belum diputuskan (DEC-015) — lihat `DECISIONS.md`.
 
 Detail di `SOURCE_OF_TRUTH.md` dan `CHANGELOG.md`.
 
@@ -30,7 +32,7 @@ Prasyarat: Node.js 20+ dan npm.
 npm install          # pasang dependency
 npm run dev          # mode pengembangan (hot reload)
 npm start            # jalankan hasil build produksi
-npm test             # 92 test
+npm test             # 108 test
 npm run verify       # lint + typecheck + test + build
 ```
 
@@ -75,7 +77,7 @@ Rincian lengkap di `FEATURES.md`.
 | `SOURCE_OF_TRUTH.md` | **Pusat kebenaran proyek.** Baca ini lebih dulu |
 | `ARCHITECTURE.md` | Batas modul, aliran data, kontrak, aturan batch & file safety |
 | `FEATURES.md` | Rincian tiap fitur + hal yang belum ditentukan |
-| `DECISIONS.md` | Catatan keputusan. 31 entri (DEC-001 s/d DEC-031) |
+| `DECISIONS.md` | Catatan keputusan. 33 entri (DEC-001 s/d DEC-033) |
 | `FUTURE_FEATURES.md` | Ide fitur yang **tidak** diimplementasikan |
 | `TESTING.md` | Strategi test, fixture yang dibutuhkan, test matrix |
 | `CHANGELOG.md` | Riwayat perubahan |
@@ -85,7 +87,7 @@ Rincian lengkap di `FEATURES.md`.
 ```
 SHELL / NAVIGATION     ← SUDAH ADA (Phase 1)
       ↓
-UI LAYER (5 langkah)   ← SUDAH ADA untuk Image Tools (Phase 2)
+UI LAYER (5 langkah)   ← SUDAH ADA untuk Image Tools (Phase 2–3)
       ↓
 PROCESSING ENGINE      ← SUDAH ADA untuk gambar (Sharp, main process)
       ↓
@@ -102,19 +104,20 @@ tetap nyaman dibaca. Token warna terpusat di `src/renderer/src/styles/tokens.css
 
 ## Yang Belum Diputuskan
 
-Phase 1 **tidak lagi terblokir**. Keputusan yang tersisa menyangkut fitur, bukan fondasi:
+Keputusan yang tersisa menyangkut fitur, bukan fondasi. **DEC-015 menghambat Image → PDF.**
 
 | ID | Item |
 |----|------|
 | DEC-008 | Engine kompresi PDF (Ghostscript? render ulang? lisensi AGPL?) |
 | DEC-012 | Distribusi & code signing |
 | DEC-014 | Default PDF → Image (DPI, page size) |
-| DEC-015 | Default Image → PDF (page size) |
+| DEC-015 | Default Image → PDF (page size, margin, DPI) — **menghambat Phase 3** |
 | DEC-016 | ZIP: file saja atau folder |
 | DEC-018 | Menyimpan preferences atau tidak |
 
 Sudah diputuskan: DEC-007 (stack), DEC-011 (testing), DEC-019 (git), DEC-021 – DEC-026,
-dan DEC-027 – DEC-031 (mesin gambar, aturan batch, output, palet warna).
+DEC-027 – DEC-031 (mesin gambar, aturan batch, output, palet warna), dan DEC-032 (kualitas
+encoder konversi).
 Rincian dan opsi lengkap di `DECISIONS.md`.
 
 ## Environment Developers

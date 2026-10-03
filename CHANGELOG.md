@@ -167,3 +167,29 @@ Aplikasi desktop pertama yang bisa dijalankan. **Belum ada fitur processing apa 
 - Teks bahasa Inggris "Choose Files" diganti "Pilih File" agar konsisten dengan DEC-006.
 - Test diperbarui untuk label tersebut; total tetap 92 test lulus.
 - `DECISIONS.md` — DEC-031 ditambahkan; DEC-022 ditandai sudah direvisi warnanya.
+
+## Phase 3 — Image Converter (Image → PDF tertahan)
+
+- Image Converter selesai diimplementasikan di `/image/convert`: target PNG, JPG, WEBP untuk
+  input JPG/JPEG/PNG/WEBP, diproses lokal dengan Sharp.
+- Alur 5 langkah dipertahankan (pilih → opsi → pratinjau → proses → hasil) memakai komponen
+  yang sama dengan Compressor dan Resizer, tanpa menambah halaman atau komponen baru.
+- Konversi tidak mengubah dimensi maupun rasio aspek; nama output `<nama>-converted.<ext>`,
+  benturan mendapat ` (2)`, ` (3)`, dst. File asli tidak pernah disentuh.
+- Status hasil `skipped` baru: file dengan format sumber = format tujuan, dan file ber-alpha
+  yang ditargetkan ke JPG, dilewati dengan alasan tertulis — tidak di-flatten diam-diam
+  (DEC-033).
+- Opsi radio format tujuan menonjol sebagai kartu pilihan; opsi yang sama dengan format seluruh
+  gambar dinonaktifkan, dan jumlah gambar transparan diperingatkan sebelum proses berjalan.
+- `image:inspect` sekarang mengembalikan `hasAlpha`; bridge, tipe global, dan IPC main
+serta operasi `convert`. Tidak ada dependency baru.
+- **Image → PDF tidak diimplementasikan.** Halaman tetap `Coming Soon`; DEC-015 (page size,
+  margin, DPI, orientasi EXIF) dan pemilihan library PDF belum diputuskan, jadi tidak ada
+  kode, tombol, atau partial UI yang dibuat.
+- Test: `tests/unit/image-engine.test.ts` 10 → 21 test, plus `tests/integration/image-convert.test.tsx`
+  5 test. Total 108 test pada 9 file, semuanya lulus; lint, typecheck, dan build hijau.
+- `tests/setup.ts` — mock bridge diselaraskan dengan bridge sebenarnya (`chooseDestination`
+  menggantikan `saveResults` yang tidak pernah ada).
+- Dokumentasi diperbarui: `SOURCE_OF_TRUTH.md`, `ARCHITECTURE.md`, `FEATURES.md`,
+  `DECISIONS.md` (DEC-032, DEC-033), `TESTING.md`, `README.md`, dan dokumen ini.
+- `ARCHITECTURE.md` — byte rusak pada baris `DEC-027`–`DEC-030` dipulihkan menjadi UTF-8 valid.

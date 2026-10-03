@@ -1,9 +1,9 @@
-import { mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises'
+import { mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import sharp from 'sharp'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { calculateDimensions, processImage, type ProcessRequest } from '../../src/main/imageEngine'
+import { SKIP_SAME_FORMAT, SKIP_TRANSPARENCY, calculateDimensions, processImage, type ImageTargetFormat, type ProcessRequest } from '../../src/main/imageEngine'
 
 let directory: string
 let original: Buffer
@@ -16,10 +16,24 @@ beforeEach(async () => {
   await writeFile(jpgPath, original)
 })
 
+/**
+ * Catatan: libvips memegang file input sampai instance di-GC sehingga Windows
+ * masih mengunci .webp saat temp dir dihapus. Kegagalan lock diabaikan agar test
+ * engine tidak bergantung pada timing GC.
+ */
 afterEach(async () => {
-  await new Promise((resolve) => setTimeout(resolve, 100))
-  await rm(directory, { recursive: true, force: true })
+  await rm(directory, { recursive: true, force: true }).catch(() => undefined)
 })
+
+/** Baca metadata lalu lepas handle file; Windows mengunci file yang masih dibuka libvips. */
+async function metadataOf(path: string) {
+  const image = sharp(path)
+  try {
+    return await image.metadata()
+  } finally {
+    await image.destroy()
+  }
+}
 
 function fileRef(path: string, name = path.split(/[\\/]/).pop() ?? 'image') {
   return stat(path).then((details) => ({ name, path, size: details.size }))
@@ -67,7 +81,7 @@ describe('image processing engine', () => {
   ] as const)('resizes with actual dimensions and preserved ratio', async (resize, dimensions) => {
     const result = await run(jpgPath, 'resize', resize)
     expect(result[0]).toMatchObject({ status: 'success', ...dimensions })
-    expect(await sharp(result[0].outputPath).metadata()).toMatchObject(dimensions)
+    expect(await metadataOf(result[0].outputPath!)).toMatchObject(dimensions)
     expect(await readFile(jpgPath)).toEqual(original)
   })
 
@@ -88,5 +102,81 @@ describe('image processing engine', () => {
     expect(() => calculateDimensions(metadata, { mode: 'width', value: 121, maintainAspectRatio: true })).toThrow()
     expect(() => calculateDimensions(metadata, { mode: 'height', value: 0, maintainAspectRatio: true })).toThrow()
     expect(() => calculateDimensions(metadata, { mode: 'percentage', value: 101, maintainAspectRatio: true })).toThrow()
+  })
+})
+
+describe('image conversion engine', () => {
+  const opaque = async (format: 'png' | 'webp'): Promise<string> => {
+    const path = join(directory, `opaque.${format}`)
+    const create = sharp({ create: { width: 120, height: 80, channels: 3, background: '#2872ad' } })
+    await writeFile(path, format === 'png' ? await create.png().toBuffer() : await create.webp().toBuffer())
+    return path
+  }
+
+  const transparent = async (): Promise<string> => {
+    const path = join(directory, 'transparan.png')
+    await writeFile(path, await sharp({ create: { width: 120, height: 80, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).png().toBuffer())
+    return path
+  }
+
+  const convert = async (path: string, target: ImageTargetFormat) => processImage({ operation: 'convert', files: [await fileRef(path)], quality: 80, destination: directory, convert: { target } }, () => undefined)
+
+  it.each([
+    ['jpg', 'png', 'png', '-converted.png'],
+    ['jpg', 'webp', 'webp', '-converted.webp'],
+    ['png', 'jpg', 'jpeg', '-converted.jpg'],
+    ['webp', 'jpg', 'jpeg', '-converted.jpg'],
+    ['webp', 'png', 'png', '-converted.png']
+  ] as const)('converts %s to %s without changing dimensions', async (from, to, expectedFormat, nameSuffix) => {
+    const path = from === 'jpg' ? jpgPath : await opaque(from)
+    const before = await readFile(path)
+    const result = await convert(path, to)
+    expect(result[0].status).toBe('success')
+    expect(result[0].outputPath).toContain(nameSuffix)
+    expect(await metadataOf(result[0].outputPath!)).toMatchObject({ format: expectedFormat, width: 120, height: 80 })
+    expect(await readFile(path)).toEqual(before)
+  })
+
+  it('skips a transparent image instead of flattening it into JPG', async () => {
+    const path = await transparent()
+    const result = await convert(path, 'jpg')
+    expect(result[0]).toMatchObject({ status: 'skipped', reason: SKIP_TRANSPARENCY })
+    expect(result[0].outputPath).toBeUndefined()
+    expect(await readdir(directory)).not.toContain('transparan-converted.jpg')
+  })
+
+  it('skips a file that already uses the target format', async () => {
+    const result = await convert(jpgPath, 'jpg')
+    expect(result[0]).toMatchObject({ status: 'skipped', reason: SKIP_SAME_FORMAT })
+    expect(await readdir(directory)).not.toContain('foto-converted.jpg')
+  })
+
+  it('converts a transparent image to WEBP', async () => {
+    const path = await transparent()
+    const result = await convert(path, 'webp')
+    expect(result[0].status).toBe('success')
+    expect((await metadataOf(result[0].outputPath!)).format).toBe('webp')
+  })
+
+  it('reports a corrupt file and still converts the rest of the batch', async () => {
+    const fakePath = join(directory, 'rusak.webp')
+    await writeFile(fakePath, 'not an image')
+    const progress = vi.fn()
+    const results = await processImage({ operation: 'convert', files: [await fileRef(fakePath), await fileRef(jpgPath), await fileRef(await transparent())], quality: 80, destination: directory, convert: { target: 'jpg' } }, progress)
+    expect(results.map((result) => result.status)).toEqual(['failed', 'skipped', 'skipped'])
+    expect(results[0].error).not.toMatch(/Error:|Sharp|DOMException/)
+    expect(progress.mock.calls.at(-1)?.[0]).toMatchObject({ completed: 3, total: 3 })
+  })
+
+  it('uses a collision-safe output name and never writes outside the destination', async () => {
+    await writeFile(join(directory, 'foto-converted.png'), 'existing')
+    const result = await convert(jpgPath, 'png')
+    expect(result[0].outputPath).toContain('foto-converted (2).png')
+    expect(basename(dirname(result[0].outputPath!))).toBe(basename(directory))
+  })
+
+  it('rejects an unsupported target format', async () => {
+    await expect(processImage({ operation: 'convert', files: [await fileRef(jpgPath)], quality: 80, destination: directory, convert: { target: 'gif' as ImageTargetFormat } }, () => undefined)).rejects.toThrow()
+    await expect(processImage({ operation: 'convert', files: [await fileRef(jpgPath)], quality: 80, destination: directory }, () => undefined)).rejects.toThrow()
   })
 })

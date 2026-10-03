@@ -10,9 +10,9 @@ afterEach(() => {
 const imageToolsMock = {
   chooseImages: vi.fn().mockResolvedValue([]),
   chooseFolder: vi.fn().mockResolvedValue([]),
+  chooseDestination: vi.fn().mockResolvedValue(null),
   inspect: vi.fn().mockResolvedValue([]),
   process: vi.fn().mockResolvedValue([]),
-  saveResults: vi.fn().mockResolvedValue(0),
   onProgress: vi.fn().mockReturnValue(() => {})
 }
 

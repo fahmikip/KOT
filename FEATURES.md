@@ -12,9 +12,11 @@ Status legend:
 | `DEFERRED` | Ditunda; tidak diimplementasikan di V1 sampai ada keputusan |
 | `BLOCKED` | Tidak bisa dikerjakan karena ketergantungan yang belum diputuskan |
 
-> Image Compressor dan Image Resizer berstatus `IMPLEMENTED` pada Phase 2.
+> Image Compressor, Image Resizer, dan Image Converter berstatus `IMPLEMENTED` (Phase 2–3).
 >
-> Phase 1 membangun shell aplikasi; Phase 2 menambahkan Image Compressor dan Image Resizer. Fitur lainnya tetap Coming Soon.
+> Phase 1 membangun shell aplikasi; Phase 2 menambahkan Image Compressor dan Image Resizer;
+> Phase 3 menambahkan Image Converter. **Image → PDF tertahan** di Phase 3 karena DEC-015 dan
+> pemilihan library PDF belum diputuskan — tidak ada kode, tombol, atau alur yang dibuat untuknya.
 
 ### Prasyarat yang sudah satisfied di Phase 1
 
@@ -33,11 +35,8 @@ Tidak ada satu pun tool yang bisa dikerjakan sebelum keputusan ini tersedia:
 | ID | Yang dibutuhkan | Tool yang tertahan |
 |----|-----------------|---------------------|
 | DEC-008 | Engine kompresi PDF | PDF Compressor |
-
-
-
 | DEC-014 | Default DPI & page size | PDF → Image |
-| DEC-015 | Default page size | Image → PDF |
+| DEC-015 | Default page size, margin, DPI, orientasi EXIF **+ library generator PDF** | **Image → PDF** |
 | DEC-016 | ZIP: file atau folder | ZIP Creator |
 
 DEC-009, DEC-010, dan DEC-013 diputuskan untuk Image Tools Phase 2; keputusan itu belum otomatis berlaku bagi fitur lain.
@@ -52,12 +51,12 @@ Kolom "Kode" menunjukkan apakah ada implementasi untuk fitur tersebut.
 |---|-------|-------|--------|------|----------|
 | 1 | Image Tools | Image Compressor | IMPLEMENTED | `src/main/imageEngine.ts` + feature UI | M |
 | 2 | Image Tools | Image Resizer | IMPLEMENTED | `src/main/imageEngine.ts` + feature UI | M |
-| 3 | Image Tools | Image Converter | SPECIFIED | — | S |
+| 3 | Image Tools | Image Converter | IMPLEMENTED | `src/main/imageEngine.ts` + feature UI | S |
 | 4 | PDF Tools | PDF Compressor | PARTIAL | — | L |
 | 5 | PDF Tools | PDF Merge | SPECIFIED | — | M |
 | 6 | PDF Tools | PDF Split | SPECIFIED | — | S |
 | 7 | PDF Tools | PDF Rotate | SPECIFIED | — | S |
-| 8 | Convert | Image → PDF | PARTIAL | — | M |
+| 8 | Convert | Image → PDF | BLOCKED | — (sengaja tidak ada kode) | M |
 | 9 | Convert | PDF → Image | PARTIAL | — | M |
 | 10 | File Tools | Batch Rename | SPECIFIED | — | M |
 | 11 | File Tools | ZIP Creator | PARTIAL | — | S |
@@ -84,7 +83,7 @@ Format input: JPG, JPEG, PNG, WEBP.
 `UNDEFINED` yang perlu diputuskan:
 
 - Apakah hasil selalu format yang sama, atau ada opsi ubah format sekalian?
-- Quality Phase 2: JPEG/WEBP 10�100, default 80; PNG lossless.
+- Quality Phase 2: JPEG/WEBP 10–100, default 80; PNG lossless.
 - Apakah metadata (EXIF) dipertahankan? Butterfly: sebagian alatQgjpeg menghapus EXIF
   berisi lokasi dan waktu.
 - Apakah ada batas dimensi (mis. resize otomatis jika melebihi 4000px)?
@@ -104,7 +103,7 @@ Format input: JPG, JPEG, PNG, WEBP.
   ini berguna untuk foto identitas, tetapi belum ada di spesifikasi.
 - Batch: apakah opsi berlaku ke semua file sekaligus?
 
-## 3. Image Converter — `SPECIFIED`
+## 3. Image Converter — `IMPLEMENTED` (Phase 3)
 
 Konversi yang disebut minimal:
 
@@ -114,13 +113,37 @@ PNG  → JPG
 WEBP → JPG
 ```
 
-`UNDEFINED`:
+Implementasi Phase 3, mengikuti §21 instruksi phase:
 
-- Apakah konversi ke WEBP dan ke BMP/GIF/TIFF diperlukan? (hanya tiga arah di atas yang
-  disebut)
-- Apakah transparency PNG dipertahankan saat konversi ke JPG? (JPG tidak mendukung alpha —
-  perlu warna latar)
-- Apakah size boleh diperkecil saat konversi?
+| Field | Isi |
+|-------|-----|
+| Target | PNG, JPG, WEBP |
+| Dimensi | tidak berubah — konversi format tidak mengubah width/height/aspect ratio (§11) |
+| Mutu | PNG lossless; JPG/WEBP memakai default encoder Sharp (80), tanpa slider khusus |
+| Batch | ya, sekuensial, maks 100 file; kegagalan per file |
+| Output | `<nama-asli>-converted.<ext-tujuan>` di folder tujuan pilihan user (DEC-029) |
+| Koneksi internet | tidak |
+
+Perilaku yang perlu diketahui user:
+
+| Situasi | Perilaku | Alasan |
+|---------|----------|--------|
+| Format sumber = format tujuan | status `skipped` beserta alasannya; opsi radio dinonaktifkan di UI | Konversi ke format yang sama bukan konversi (§8) |
+| PNG/WEBP transparan → JPG | status `skipped` beserta alasannya, **tidak** di-flatten | Warna latar untuk alpha belum diputuskan; meratakan diam-diam merusak gambar (DEC-033) |
+| Nama file sudah ada di folder tujuan | auto-suffix ` (2)`, ` (3)`, dst. | DEC-010 / DEC-029 |
+
+Point yang sudah tidak `UNDEFINED` setelah Phase 3:
+
+- ~~Apakah konversi ke WEBP diperlukan?~~ → Ya; WEBP menjadi salah satu target (§21).
+- ~~Apakah transparency dipertahankan saat konversi ke JPG?~~ → Tidak ada opsi alpha di JPG.
+  Warna latar tetap `UNDEFINED` (DEC-033); interim: file dilewati, bukan diubah.
+- ~~Apakah size boleh diperkecil saat konversi?~~ → Tidak. Dimensi dan rasio aspek tidak
+  diubah; pengurangan ukuran hanya efek samping format target (§11).
+
+Masih `UNDEFINED` dan **tidak** ada kodenya:
+
+- BMP/GIF/TIFF sebagai target atau output — tidak ada di spesifikasi.
+- Kontrol kualitas JPG/WEBP khusus konversi — slider mutu hanya ada di Compressor (DEC-030).
 
 ## 4. PDF Compressor — `PARTIAL` (butuh DEC-008)
 
@@ -189,7 +212,7 @@ dengan drag & drop **dan** minimal satu mekanisme alternatif yang dapat diakses 
 - Rotate seluruh dokumen atau hanya halaman terpilih?
 - Apakah halaman tertentu bisa di-exclude?
 
-## 8. Image → PDF — `PARTIAL`
+## 8. Image → PDF — `BLOCKED` (Phase 3, tidak diimplementasikan)
 
 | Field | Isi |
 |-------|-----|
@@ -198,7 +221,12 @@ dengan drag & drop **dan** minimal satu mekanisme alternatif yang dapat diakses 
 | Output | satu PDF |
 | Koneksi internet | tidak |
 
-`UNDEFINED` (DEC-015):
+**Status `BLOCKED`.** Halaman `/convert/image-to-pdf` tetap `Coming Soon` dan tidak ada kode,
+dependency, tombol, atau partial UI untuk fitur ini. Alasannya: membuat PDF memerlukan library
+yang belum dipilih, dan default halaman belum diputuskan (DEC-015). Menebak salah satunya
+berarti menghasilkan dokumen dengan ukuran halaman yang salah.
+
+`UNDEFINED` (DEC-015 + pemilihan library):
 
 - Default page size: A4 atau Letter atau "Fit to image"? (kritikal untuk dokumen Indonesia)
 - Margin default: 0 mm atau nilai lain?

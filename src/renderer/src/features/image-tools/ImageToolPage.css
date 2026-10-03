@@ -145,6 +145,60 @@
   font-size: var(--font-size-sm);
 }
 
+.image-tool__convert-options {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.image-tool__label {
+  font-weight: var(--font-weight-medium);
+}
+
+.image-tool__formats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+
+.image-tool__format {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  cursor: pointer;
+}
+
+.image-tool__format:has(input:checked) {
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-muted);
+}
+
+.image-tool__format:has(input:focus-visible) {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+
+.image-tool__format:has(input:disabled) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.image-tool__format input {
+  accent-color: var(--color-primary);
+}
+
+.image-tool__format small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.image-tool__skipped {
+  color: var(--color-text-secondary) !important;
+}
+
 .image-tool__files,
 .image-tool__results {
   display: grid;
@@ -197,7 +251,8 @@
 /* Status di dalam daftar file tampil sebagai label pill, bukan teks biasa. */
 .image-tool__files .image-tool__valid,
 .image-tool__files .image-tool__invalid,
-.image-tool__results .image-tool__invalid {
+.image-tool__results .image-tool__invalid,
+.image-tool__results .image-tool__skipped {
   align-self: center;
   flex: 0 0 auto;
   padding: 2px var(--space-2);
@@ -218,6 +273,11 @@
 .image-tool__results .image-tool__invalid {
   background-color: var(--color-danger-muted);
   border-color: var(--color-danger-border);
+}
+
+.image-tool__results .image-tool__skipped {
+  background-color: var(--color-surface-muted);
+  border-color: var(--color-border-strong);
 }
 
 .image-tool__dimensions {

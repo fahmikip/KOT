@@ -6,6 +6,13 @@ import { NotFound } from '@/pages/NotFound'
 import { ImageToolPage } from '@/features/image-tools/ImageToolPage'
 import { TOOLS, toRoutePath } from '@/lib/routes'
 
+/** Tool Image yang punya halaman nyata; sisanya masih Coming Soon. */
+const IMAGE_TOOL_OPERATIONS: Partial<Record<string, 'compress' | 'resize' | 'convert'>> = {
+  'image-compress': 'compress',
+  'image-resize': 'resize',
+  'image-convert': 'convert'
+}
+
 /**
  * Peta route aplikasi.
  *
@@ -21,14 +28,15 @@ export function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         {TOOLS.map((tool) => (
-          <Route
-            key={tool.id}
-            path={toRoutePath(tool.path)}
-            element={tool.id === 'image-compress' || tool.id === 'image-resize' ? <ImageToolPage operation={tool.id === 'image-compress' ? 'compress' : 'resize'} /> : <ComingSoon />}
-          />
+          <Route key={tool.id} path={toRoutePath(tool.path)} element={<ImageToolRoute toolId={tool.id} />} />
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   )
+}
+
+function ImageToolRoute({ toolId }: { toolId: string }) {
+  const operation = IMAGE_TOOL_OPERATIONS[toolId]
+  return operation ? <ImageToolPage operation={operation} /> : <ComingSoon />
 }
