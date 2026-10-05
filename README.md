@@ -13,7 +13,7 @@ khususnya pekerjaan yang terkait dengan **foto, PDF, dokumen, dan file**.
 ```
 FASE     : Phase 3 — Image Converter (SELESAI); Image → PDF TERTAHAN (DEC-015)
 STACK    : Electron 44 + TypeScript 5.9 + React 19  (DEC-007, Opsi A)
-TEST     : 108 test lulus (Vitest + Testing Library)
+TEST     : 109 test lulus (Vitest + Testing Library)
 BUILD    : out/ — bisa dijalankan
 FITUR    : 3 dari 13 — Image Compressor + Image Resizer + Image Converter
 ```
@@ -32,7 +32,7 @@ Prasyarat: Node.js 20+ dan npm.
 npm install          # pasang dependency
 npm run dev          # mode pengembangan (hot reload)
 npm start            # jalankan hasil build produksi
-npm test             # 108 test
+npm test             # 109 test
 npm run verify       # lint + typecheck + test + build
 ```
 
@@ -102,6 +102,11 @@ Merah maron sebagai warna aksi utama dengan aksen emas pada garis pemisah, penan
 dan label status. Header dan sidebar memakai permukaan maron gelap; konten tetap terang agar
 tetap nyaman dibaca. Token warna terpusat di `src/renderer/src/styles/tokens.css` (DEC-031).
 
+Tokennya dipetakan ke peran (`chrome`, `accent-soft`/`accent-strong`, `*-muted`), hierarki
+dibangun dari border dan whitespace, dan aksen emas tidak pernah dipakai sebagai warna teks di
+atas emas. Ikon berupa SVG dekoratif, navigasi tetap link, dan rasio kontras teks serta batas
+kontrol sudah dihitung (teks ≥ 4.5:1, non-teks ≥ 3:1) — rinciannya di DEC-034.
+
 ## Yang Belum Diputuskan
 
 Keputusan yang tersisa menyangkut fitur, bukan fondasi. **DEC-015 menghambat Image → PDF.**
@@ -116,8 +121,8 @@ Keputusan yang tersisa menyangkut fitur, bukan fondasi. **DEC-015 menghambat Ima
 | DEC-018 | Menyimpan preferences atau tidak |
 
 Sudah diputuskan: DEC-007 (stack), DEC-011 (testing), DEC-019 (git), DEC-021 – DEC-026,
-DEC-027 – DEC-031 (mesin gambar, aturan batch, output, palet warna), dan DEC-032 (kualitas
-encoder konversi).
+DEC-027 – DEC-031 (mesin gambar, aturan batch, output, palet warna), DEC-032 (kualitas
+encoder konversi), dan DEC-034 (refinement visual + aksesibilitas).
 Rincian dan opsi lengkap di `DECISIONS.md`.
 
 ## Environment Developers

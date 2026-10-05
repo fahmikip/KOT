@@ -1,20 +1,21 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--space-2);
-  border: 1px solid transparent;
+  gap: var(--space-1);
+  padding: 1px var(--space-2);
+  border: var(--border-width) solid transparent;
   border-radius: var(--radius-pill);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: var(--letter-spacing-wide);
-  line-height: 1.6;
+  letter-spacing: var(--tracking-wide);
+  line-height: 1.7;
   white-space: nowrap;
 }
 
 .badge--neutral {
   background-color: var(--color-surface-muted);
   border-color: var(--color-border);
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
 }
 
 .badge--info {

@@ -1,8 +1,16 @@
 import type { HTMLAttributes, ReactNode } from 'react'
+import { Icon, type IconName } from '@/components/Icon'
 import { cn } from '@/lib/cn'
 import './Alert.css'
 
 export type AlertTone = 'info' | 'success' | 'warning' | 'danger'
+
+const TONE_ICON: Record<AlertTone, IconName> = {
+  info: 'info',
+  success: 'check',
+  warning: 'warning',
+  danger: 'warning'
+}
 
 export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   tone?: AlertTone
@@ -21,8 +29,13 @@ export function Alert({ tone = 'info', title, children, className, ...rest }: Al
       role={tone === 'danger' ? 'alert' : 'status'}
       {...rest}
     >
-      <p className="alert__title">{title}</p>
-      {children ? <div className="alert__body">{children}</div> : null}
+      <span className="alert__icon" aria-hidden="true">
+        <Icon name={TONE_ICON[tone]} size="sm" />
+      </span>
+      <div className="alert__content">
+        <p className="alert__title">{title}</p>
+        {children ? <div className="alert__body">{children}</div> : null}
+      </div>
     </div>
   )
 }

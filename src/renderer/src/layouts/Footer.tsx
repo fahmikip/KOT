@@ -1,3 +1,4 @@
+import { Icon } from '@/components/Icon'
 import { APP_DISCLAIMER, APP_VERSION } from '@/lib/appInfo'
 import './Footer.css'
 
@@ -8,8 +9,13 @@ import './Footer.css'
 export function Footer() {
   return (
     <footer className="footer">
-      <p className="footer__disclaimer">{APP_DISCLAIMER}</p>
-      <p className="footer__version">Versi {APP_VERSION}</p>
+      <div className="footer__inner">
+        <p className="footer__disclaimer">
+          <Icon name="info" size="sm" />
+          <span>{APP_DISCLAIMER}</span>
+        </p>
+        <p className="footer__version">Versi {APP_VERSION}</p>
+      </div>
     </footer>
   )
 }

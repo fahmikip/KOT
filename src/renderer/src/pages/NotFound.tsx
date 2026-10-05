@@ -1,4 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
+import { Icon } from '@/components/Icon'
+import { DASHBOARD_ROUTE } from '@/lib/routes'
 import './NotFound.css'
 
 /**
@@ -15,8 +17,9 @@ export function NotFound() {
       <p className="not-found__path">
         Alamat yang diminta: <code className="not-found__code-inline">{pathname}</code>
       </p>
-      <Link className="not-found__back" to="/">
-        Kembali ke Dashboard
+      <Link className="link-button not-found__back" to={DASHBOARD_ROUTE}>
+        <Icon name="arrow-left" size="sm" />
+        <span>Kembali ke Dashboard</span>
       </Link>
     </div>
   )

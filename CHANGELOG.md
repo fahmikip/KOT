@@ -193,3 +193,52 @@ serta operasi `convert`. Tidak ada dependency baru.
 - Dokumentasi diperbarui: `SOURCE_OF_TRUTH.md`, `ARCHITECTURE.md`, `FEATURES.md`,
   `DECISIONS.md` (DEC-032, DEC-033), `TESTING.md`, `README.md`, dan dokumen ini.
 - `ARCHITECTURE.md` — byte rusak pada baris `DEC-027`–`DEC-030` dipulihkan menjadi UTF-8 valid.
+
+## UI Redesign Pass 2 — Presisi, Aksesibilitas, Alur Lima Langkah
+
+Redefinisi visual menyeluruh atas identitas maron + emas (DEC-031, dilanjutkan DEC-034).
+Semua nilai warna tetap terpusat di `src/renderer/src/styles/tokens.css`; tidak ada warna hex
+baru di luar token, tidak ada gradient, tidak ada dependency baru.
+
+### Changed
+
+- **Token dipetakan ke peran.** `chrome` / `chrome-deep` untuk header dan sidebar,
+  `accent-soft` / `accent-strong` untuk emas terang (di atas maron) dan emas gelap (teks di
+  atas emas), serta pasangan `*-muted` untuk tone status. Hierarki memakai border + whitespace;
+  `elevation-1` tanpa offset Y dan `elevation-2` hanya menambah blur 6 px.
+- **Tipografi fluid.** Skala heading memakai `clamp()`, angka ukuran file memakai
+  `tabular-nums`, dan `line-height` dikunci per peran teks.
+- **Ikon SVG dekoratif.** `components/Icon.tsx` (inline SVG, `aria-hidden`,
+  `focusable="false"`) plus peta ikon per tool di `lib/toolIcons.ts`. Tidak ada emoji atau
+  glyph font di UI.
+- **`PageHeader` sebagai komponen bersama** dipakai Dashboard, Coming Soon, Not Found, dan
+  ketiga halaman Image Tool agar judul, eyebrow, dan deskripsi konsisten.
+- **Sidebar** memakai penanda status berbentuk titik dengan teks `.sr-only`, ikon per kategori,
+  dan hierarki label yang lebih ringan.
+- **Dashboard** menampilkan lima kartu kategori dengan baris tool yang punya state hover
+  full-bleed. `dashboard__tool-list` memakai `padding-inline` alih-alih margin negatif pada
+  anaknya, sehingga tidak lagi dilaporkan sebagai elemen dengan `scrollWidth > clientWidth`.
+- **Image Tool** memakai lima langkah yang terbaca jelas: kartu langkah bernomor, kontrol
+  input bergaris, pilihan format sebagai kartu radio 3 kolom, daftar file dengan ukuran dan
+  status, progress bar, dan hasil yang menampilkan `asli → baru` beserta penghematan.
+- **`--color-border-strong`** digelapkan dari `#9c8f8a` ke `#948780` karena rasionya di atas
+  `--color-surface-muted` hanya 2.72:1, di bawah 3:1 yang diperlukan untuk batas kontrol.
+- **`FileDropZone`** mendapat prop `showAction` supaya tidak ada dua CTA dalam satu blok.
+- **`backgroundColor` Electron** diselaraskan dengan token background aplikasi.
+
+### Added
+
+- `.link-button` di `global.css` supaya navigasi tetap elemen link meski tampil seperti tombol.
+- `.sr-only` untuk teks status yang hanya dibaca screen reader.
+- `ButtonSize` `lg` dan `CardVariant` `flush` / `quiet` untuk menyediakan skala komponen yang
+  dibutuhkan tanpa perkecilan gaya hard-coded.
+
+### Verified
+
+- 24 pasangan warna dihitung dengan rasio WCAG: rasio teks terendah 4.95:1, rasio non-teks
+  terendah 3.02:1 — semua lolos.
+- Layout diukur di 1584 px (tiga kolom), 1264 px (dua kolom), dan 404 px (drawer): tanpa
+  overflow horizontal, tanpa teks terpotong, dan tanpa overlap antar langkah.
+- Alur lima langkah dijalankan sampai halaman hasil pada Compressor, Resizer, dan Converter
+  memakai bridge preload palsu.
+- `npm run verify` hijau: lint, typecheck, 9 file test / 109 test, build.

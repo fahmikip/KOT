@@ -91,7 +91,9 @@ export function AppLayout() {
         ) : null}
 
         <main className="app-layout__main" id="main-content">
-          <Outlet />
+          <div className="app-layout__content">
+            <Outlet />
+          </div>
         </main>
       </div>
 

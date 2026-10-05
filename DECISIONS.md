@@ -690,3 +690,54 @@ menghapus logo, watermark transparan, atau area yang seharusnya kosong.
 Ringkasan hasil menampilkan jumlah "dilewati" agar tidak terlihat seperti kegagalan.
 **Status:** PARTIAL — opsi A/B/C masih `UNDEFINED`; implementasi saat ini memakai D sebagai
 interim yang tidak merusak data. Segera setelah user memilih opsi, DEC-033 ditutup.
+
+## DEC-034
+
+**Tanggal:** 2026-10-05
+**Keputusan:** Redefinisi visual menyeluruh (pass kedua) pada identitas maron + emas DEC-031.
+Tiga hal yang dikunci:
+
+1. **Palet dipetakan ke peran, bukan ke nama warna.** Token dipisah menjadi `chrome` /
+   `chrome-deep` (header dan sidebar), `accent-soft` / `accent-strong` (emas terang untuk
+   permukaan gelap, emas gelap untuk teks di permukaan terang), dan pasangan
+   `*-muted` untuk setiap tone. Nilai hex lama dipertahankan sebagai rujukan, tetapi tidak lagi
+   dipakai langsung di komponen.
+2. **Hierarki lewat whitespace dan border, bukan shadow.** `elevation-1` hanya `border` +
+   `box-shadow` 1 px; `elevation-2` menambah blur 6 px tanpa offset Y. Kartu dashboard memakai
+   aksen emas 2 px di sisi atas, bukan kartu berbayang berat.
+3. **Aksen emas tidak pernah jadi warna teks di atas warna emas.** Untuk itu ada
+   `accent-strong` (`#856512`, 4.95:1 di atas `accent-muted`), sedangkan emas terang hanya
+   dipakai di atas maron. Kontras diuji dengan rasio WCAG, bukan perkiraan mata.
+
+Tambahan struktural: tipografi memakai skala fluid (`clamp()`) dengan `tabular-nums` untuk angka
+ukuran file, komponen `Icon` (inline SVG dekoratif, `aria-hidden`, `focusable="false"`) +
+peta ikon per tool di `lib/toolIcons.ts`, komponen `PageHeader` bersama untuk semua halaman,
+utility `.link-button` supaya navigasi tetap link (bukan button) meski tampil seperti tombol,
+dan sidebar memakai penanda status berbentuk titik dengan teks `.sr-only`.
+
+**Alasan:** Pass pertama (DEC-031) sudah benar warna, tetapi hierarki masih bergantung pada
+shading dan abu-abu netral yang terasa seperti template sehingga identitas maron terasa lemah,
+kartu tool terlihat datar, dan lima langkah Image Tool tidak terbaca sebagai alur. Pemeriksaan
+DOM juga menunjukkan overlay full-bleed membuat `scrollWidth > clientWidth`, dan rasio kontras
+`--color-border-strong` di permukaan muted hanya 2.72:1 (di bawah 3:1 untuk batas kontrol).
+Dua-duanya diperbaiki: `dashboard__tool-list` sekarang memakai `padding-inline` alih-alih
+margin negatif pada anaknya, dan `border-strong` digelapkan dari `#9c8f8a` ke `#948780`.
+
+**Alternatif & konsekuensi:**
+
+| Opsi | Konsekuensi |
+|------|-------------|
+| A | Ganti identitas warna lagi — ditolak, warna maron + emas adalah pilihan user (DEC-031) |
+| B | Glassmorphism / gradient | Berlawanan dengan §9 SOURCE_OF_TRUTH (tanpa gradient) dan menurunkan kontras teks |
+| C | Bayangan tebal untuk hierarki | Terlihat seperti template dan menambah bobot visual di chrome yang sudah gelap |
+| D | **Border + spacing + satu aksen** (dipilih) | Hierarki terbaca, chrome tetap ringan, kontras non-teks lebih mudah dijaga ≥3:1 |
+
+**Dampak:** Tidak ada perubahan perilaku, teks yang diuji, maupun kontrak IPC. Semua label
+tetap Bahasa Indonesia (DEC-006) dan navigasi tetap berupa link. Total test 108 → 109.
+Bukti objektif yang dikumpulkan: 24 pasangan warna lolos (rasio teks terendah 4.95:1,
+rasio non-teks terendah 3.02:1), layout diukur pada 1584 px (tiga kolom), 1264 px (dua kolom),
+dan 404 px (drawer), lalu alur lima langkah dijalankan sampai halaman hasil pada Compressor,
+Resizer, dan Converter memakai bridge palsu — tanpa overflow horizontal, tanpa teks terpotong,
+dan tanpa overlap antar langkah.
+
+**Status:** ACCEPTED — pass visual berikutnya harus menambah fitur, bukan gaya.

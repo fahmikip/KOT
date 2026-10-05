@@ -1,84 +1,112 @@
 /*
  * Design tokens — KPU Office Tools
  *
- * Identitas visual: merah maron sebagai warna utama, emas sebagai aksen.
- * Lihat DEC-031 (revisi palet DEC-022).
+ * Identitas visual: merah maron sebagai warna aksi utama, emas sebagai aksen.
+ * Lihat DEC-031 (revisi palet DEC-022) dan DEC-034 (penyempurnaan tipografi,
+ * spacing, elevation, dan komponen).
  *
  * Aturan yang berlaku:
  * - Tanpa gradient, tanpa glassmorphism, tanpa neon (§14).
  * - Maron = warna aksi utama. Emas HANYA aksen: garis, penanda aktif, dan
  *   ornamen. Emas tidak pernah menjadi warna tombol atau latar besar.
+ * - Permukaan dipisah dengan garis 1px lebih dulu, bayangan hanya untuk elevasi
+ *   yang benar-benar lifted (dropdown, drawer, header).
  * - Warna lain hanya untuk status semantik (success/warning/danger).
  * - Semua pasangan warna teks/latar belakang wajib memenuhi WCAG AA (4.5:1).
  * - Font memakai system stack. Tidak ada webfont, tidak ada permintaan jaringan.
+ * - Angka memakai tabular numerals supaya kolom angka tidak bergeser.
  */
 
 :root {
   /* ---------------------------------------------------------------- color */
-  --color-background: #f6f4f2;
+  --color-background: #f7f5f4;
   --color-surface: #ffffff;
-  --color-surface-muted: #f0ecea;
-  --color-border: #e6ded9;
-  --color-border-strong: #9c8c86;
+  --color-surface-muted: #f2eeec;
+  --color-surface-sunken: #eae4e1;
+  --color-border: #e6dfdb;
+  --color-border-subtle: #f1ecea;
+  --color-border-strong: #948780;
 
-  --color-text-primary: #1d1618;
-  --color-text-secondary: #56494c;
+  --color-text-primary: #1c1517;
+  --color-text-secondary: #56484c;
+  --color-text-tertiary: #6e5f63;
   --color-text-inverse: #ffffff;
 
   /* Merah maron — warna aksi utama. */
   --color-primary: #7a1f2b;
-  --color-primary-hover: #631722;
-  --color-primary-active: #4f1019;
-  --color-primary-muted: #f6e9eb;
-  --color-primary-border: #e3c3c8;
+  --color-primary-hover: #6a1a25;
+  --color-primary-active: #56131d;
+  --color-primary-muted: #f7eaec;
+  --color-primary-border: #e5c6cb;
+  --color-primary-subtle: #f2dfe2;
 
   /* Emas — aksen dekoratif dan penanda aktif. */
   --color-accent: #d4af37;
-  --color-accent-strong: #8a6a12;
-  --color-accent-muted: #fbf3df;
-  --color-accent-border: #e6d3a0;
+  --color-accent-strong: #856512;
+  --color-accent-soft: #e8ca74;
+  --color-accent-muted: #fbf4e1;
+  --color-accent-border: #e7d5a6;
 
   /* Permukaan gelap (header + sidebar). */
   --color-chrome: #6d1b26;
-  --color-chrome-deep: #551420;
-  --color-chrome-border: rgb(255 255 255 / 14%);
+  --color-chrome-deep: #4e121b;
+  --color-chrome-border: rgb(255 255 255 / 13%);
+  --color-chrome-raised: rgb(255 255 255 / 8%);
+  --color-chrome-hover: rgb(255 255 255 / 6%);
   --color-text-on-chrome: #ffffff;
-  --color-text-on-chrome-muted: #e0d2ce;
+  --color-text-on-chrome-muted: #e2d5d1;
+  --color-text-on-chrome-faint: #bda9a5;
 
-  --color-success: #1a6b45;
-  --color-success-muted: #e4f1ea;
-  --color-success-border: #b9dcc8;
-  --color-warning: #7d5200;
-  --color-warning-muted: #fbf0dc;
-  --color-warning-border: #ecd5a4;
+  --color-success: #186b45;
+  --color-success-muted: #e5f1ea;
+  --color-success-border: #b8dbc8;
+  --color-warning: #7a5000;
+  --color-warning-muted: #faf0da;
+  --color-warning-border: #ecd4a1;
   --color-danger: #a8261d;
   --color-danger-hover: #8c1d16;
-  --color-danger-muted: #fbe8e6;
-  --color-danger-border: #eec4c0;
+  --color-danger-muted: #fbe9e7;
+  --color-danger-border: #eec3bf;
 
   --color-focus-ring: #7a1f2b;
-  --color-focus-ring-on-chrome: #d4af37;
+  --color-focus-ring-on-chrome: #e8ca74;
 
   /* ------------------------------------------------------------- spacing */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
 
   /* -------------------------------------------------------------- radius */
-  --radius-sm: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-pill: 999px;
 
+  /* --------------------------------------------------------------- sizes */
+  --border-width: 1px;
+  --border-width-strong: 2px;
+  --control-height-sm: 34px;
+  --control-height-md: 40px;
+  --focus-ring-width: 2px;
+
   /* ------------------------------------------------------------ elevation */
-  --shadow-sm: 0 1px 2px rgb(29 22 24 / 6%);
-  --shadow-md: 0 2px 10px rgb(29 22 24 / 8%);
-  --shadow-lg: 0 12px 32px rgb(29 22 24 / 14%);
+  --shadow-xs: 0 1px 2px rgb(28 21 23 / 5%);
+  --shadow-sm:
+    0 1px 2px rgb(28 21 23 / 5%),
+    0 1px 3px rgb(28 21 23 / 4%);
+  --shadow-md:
+    0 2px 4px rgb(28 21 23 / 4%),
+    0 8px 20px rgb(28 21 23 / 8%);
+  --shadow-lg:
+    0 2px 6px rgb(28 21 23 / 6%),
+    0 14px 34px rgb(28 21 23 / 14%);
 
   /* ---------------------------------------------------------- typography */
   --font-family-sans:
@@ -86,28 +114,31 @@
   --font-family-mono: ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', 'Courier New', monospace;
 
   --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-md: 1rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.375rem;
-  --font-size-2xl: 1.75rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-md: 0.9375rem;
+  --font-size-lg: 1.0625rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
 
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  --line-height-tight: 1.25;
-  --line-height-normal: 1.5;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-normal: 1.55;
   --line-height-relaxed: 1.7;
 
-  --letter-spacing-wide: 0.04em;
-  --letter-spacing-wider: 0.12em;
+  --tracking-tight: -0.015em;
+  --tracking-wide: 0.03em;
+  --tracking-wider: 0.1em;
 
   /* -------------------------------------------------------------- layout */
-  --sidebar-width: 264px;
-  --header-height: 64px;
-  --content-max-width: 1080px;
+  --sidebar-width: 272px;
+  --header-height: 60px;
+  --content-max-width: 1160px;
   --rule-accent-width: 3px;
 
   /* --------------------------------------------------------- breakpoints */
@@ -115,6 +146,7 @@
   --breakpoint-lg: 1024px;
 
   /* -------------------------------------------------------------- motion */
-  --transition-fast: 120ms ease;
-  --transition-base: 180ms ease;
+  --ease-out: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --transition-fast: 120ms var(--ease-out);
+  --transition-base: 180ms var(--ease-out);
 }

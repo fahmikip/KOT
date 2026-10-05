@@ -1,0 +1,74 @@
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-5);
+  border-bottom: var(--border-width) solid var(--color-border);
+}
+
+.page-header__text {
+  min-width: 0;
+}
+
+.page-header__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent-strong);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+}
+
+/* Segmen emas pendek sebagai penanda identitas, bukan hiasan. */
+.page-header__eyebrow::before {
+  content: '';
+  width: 20px;
+  height: var(--rule-accent-width);
+  background-color: var(--color-accent);
+  border-radius: var(--radius-pill);
+}
+
+.page-header__title {
+  margin-top: var(--space-2);
+  font-size: var(--font-size-2xl);
+  line-height: var(--line-height-tight);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.page-header__description {
+  margin-top: var(--space-2);
+  max-width: 68ch;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-normal);
+}
+
+.page-header__aside {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+}
+
+@media (min-width: 768px) {
+  .page-header__title {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header__aside {
+    padding-bottom: 0;
+  }
+}

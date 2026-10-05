@@ -1,7 +1,8 @@
 import { NavLink } from 'react-router-dom'
-import { Badge, type BadgeTone } from '@/components/Badge'
-import { cn } from '@/lib/cn'
+import { Icon } from '@/components/Icon'
 import { DASHBOARD_ROUTE, TOOL_GROUPS, TOOL_STATUS, toolsByGroup, type ToolStatus } from '@/lib/routes'
+import { TOOL_GROUP_ICON } from '@/lib/toolIcons'
+import { cn } from '@/lib/cn'
 import './Sidebar.css'
 
 export interface SidebarProps {
@@ -10,9 +11,9 @@ export interface SidebarProps {
   onNavigate: () => void
 }
 
-const STATUS_BADGE: Record<ToolStatus, { label: string; tone: BadgeTone }> = {
-  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', tone: 'neutral' },
-  [TOOL_STATUS.READY]: { label: 'Siap digunakan', tone: 'accent' }
+const STATUS: Record<ToolStatus, { label: string; state: 'ready' | 'planned' }> = {
+  [TOOL_STATUS.COMING_SOON]: { label: 'Coming Soon', state: 'planned' },
+  [TOOL_STATUS.READY]: { label: 'Siap digunakan', state: 'ready' }
 }
 
 /**
@@ -20,8 +21,9 @@ const STATUS_BADGE: Record<ToolStatus, { label: string; tone: BadgeTone }> = {
  *
  * Menu item SELALU memakai <NavLink> (link), bukan button — navigasi harus berupa
  * link agar bisa dibuka di tab baru dan dibaca screen reader dengan benar.
- * Tool yang belum aktif diberi label COMING SOON yang eksplisit; tidak ada
- * halaman palsu yang seolah-olah fiturnya sudah berfungsi.
+ * Status tool tidak pernah disembunyikan: titik di kanan selalu berpasangan dengan
+ * teks screen reader, jadi yang melihat dan yang membaca dapat info yang sama.
+ * Tidak ada tombol collapse, tidak ada sub-menu, tidak ada filter.
  */
 export function Sidebar({ isOpen, onNavigate }: SidebarProps) {
   return (
@@ -30,14 +32,21 @@ export function Sidebar({ isOpen, onNavigate }: SidebarProps) {
       id="sidebar-navigation"
       aria-label="Navigasi utama"
     >
-      <NavLink
-        to={DASHBOARD_ROUTE}
-        end
-        className={({ isActive }) => cn('sidebar__link', isActive && 'sidebar__link--active')}
-        onClick={onNavigate}
-      >
-        Dashboard
-      </NavLink>
+      <ul className="sidebar__list">
+        <li>
+          <NavLink
+            to={DASHBOARD_ROUTE}
+            end
+            className={({ isActive }) => cn('sidebar__link', isActive && 'sidebar__link--active')}
+            onClick={onNavigate}
+          >
+            <span className="sidebar__link-main">
+              <Icon name="grid" size="sm" />
+              <span className="sidebar__link-label">Dashboard</span>
+            </span>
+          </NavLink>
+        </li>
+      </ul>
 
       <div className="sidebar__divider" aria-hidden="true" />
 
@@ -46,7 +55,7 @@ export function Sidebar({ isOpen, onNavigate }: SidebarProps) {
           <p className="sidebar__group-label">{group.label}</p>
           <ul className="sidebar__list">
             {toolsByGroup(group.id).map((tool) => {
-              const badge = STATUS_BADGE[tool.status]
+              const status = STATUS[tool.status]
               return (
                 <li key={tool.id}>
                   <NavLink
@@ -56,8 +65,14 @@ export function Sidebar({ isOpen, onNavigate }: SidebarProps) {
                     }
                     onClick={onNavigate}
                   >
-                    <span className="sidebar__link-label">{tool.label}</span>
-                    <Badge tone={badge.tone}>{badge.label}</Badge>
+                    <span className="sidebar__link-main">
+                      <Icon name={TOOL_GROUP_ICON[tool.group]} size="sm" />
+                      <span className="sidebar__link-label">{tool.label}</span>
+                    </span>
+                    <span className={cn('sidebar__status', `sidebar__status--${status.state}`)}>
+                      <span className="sidebar__status-dot" aria-hidden="true" />
+                      <span className="sr-only">{status.label}</span>
+                    </span>
                   </NavLink>
                 </li>
               )

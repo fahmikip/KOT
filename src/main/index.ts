@@ -105,7 +105,7 @@ function createWindow(): BrowserWindow {
     minHeight: 480,
     show: false,
     title: APP_WINDOW_TITLE,
-    backgroundColor: '#f4f6f8',
+    backgroundColor: '#f7f5f4',
     webPreferences: {
       // Posture keamanan renderer (DEC-007 / SECURITY PRINCIPLES).
       contextIsolation: true,

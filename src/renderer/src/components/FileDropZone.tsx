@@ -1,4 +1,5 @@
 import { useCallback, useId, useState, type DragEvent } from 'react'
+import { Icon } from '@/components/Icon'
 import { cn } from '@/lib/cn'
 import './FileDropZone.css'
 
@@ -7,25 +8,28 @@ export interface FileDropZoneProps {
   /** Membuka pemilih native agar aplikasi desktop mendapat path file yang dapat diproses. */
   onChooseFiles?: () => void
   disabled?: boolean
+  /**
+   * Label aksi "Pilih File" di dalam area. Nilai default true. Halaman yang sudah
+   * punya baris tombol sendiri mengeset false supaya tidak ada dua ajakan sekaligus.
+   */
+  showAction?: boolean
   className?: string
 }
 
 /**
- * Drop zone file — KHUSUS Phase 1: komponen UI saja.
+ * Drop zone file.
  *
- * Batasan yang disengaja (Phase 1 §12):
+ * Batasan yang disengaja (ARCHITECTURE.md §5, DEC-001):
  * - Drag state dan hover state berfungsi.
- * - Selected state ditampilkan sebagai daftar nama file.
- * - TIDAK ada reading isi file, validasi kompleks, processing, maupun upload.
- *   File tidak pernah dikirim ke mana pun (DEC-001).
- *
- *_onFilesSelected belum dipakai halaman mana pun pada Phase 1 karena seluruh tool
- * masih COMING SOON. Komponen ini diminta eksplisit sebagai fondasi UI.
+ * - TIDAK ada reading isi file di layer ini, dan tidak ada upload ke mana pun.
+ * - Area drop adalah satu-satunya <button> supaya bisa difokus dan diaktifkan
+ *   dengan keyboard; label aksi di dalamnya hanya <span> (ACCESSIBILITY).
  */
 export function FileDropZone({
   onDroppedFiles,
   onChooseFiles,
   disabled = false,
+  showAction = true,
   className
 }: FileDropZoneProps) {
   const [isDragging, setIsDragging] = useState(false)
@@ -83,13 +87,15 @@ export function FileDropZone({
         disabled={disabled}
         aria-describedby={hintId}
       >
+        <span className="dropzone__icon" aria-hidden="true">
+          <Icon name="upload" size="lg" />
+        </span>
         <span className="dropzone__title">Drop file di sini</span>
         <span className="dropzone__hint" id={hintId}>
           atau pilih dari komputer
         </span>
-        <span className="dropzone__action">Pilih File</span>
+        {showAction ? <span className="dropzone__action">Pilih File</span> : null}
       </button>
-
     </div>
   )
 }

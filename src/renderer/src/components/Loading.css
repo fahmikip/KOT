@@ -1,8 +1,9 @@
 .loading {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-3);
-  padding: var(--space-8) var(--space-4);
+  padding: var(--space-12) var(--space-4);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
@@ -10,7 +11,7 @@
 .loading__spinner {
   width: 16px;
   height: 16px;
-  border: 2px solid var(--color-primary-muted);
+  border: 2px solid var(--color-primary-border);
   border-top-color: var(--color-primary);
   border-radius: var(--radius-pill);
   animation: loading-spin 700ms linear infinite;

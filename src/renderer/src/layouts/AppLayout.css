@@ -33,7 +33,7 @@
   z-index: 25;
   padding: 0;
   border: 0;
-  background-color: rgb(45 12 18 / 55%);
+  background-color: rgb(43 11 16 / 55%);
   cursor: pointer;
 }
 
@@ -58,17 +58,27 @@
 .app-layout__main {
   flex: 1 1 auto;
   min-width: 0;
-  padding: var(--space-6) var(--space-4);
+  padding: var(--space-6) var(--space-4) var(--space-10);
+}
+
+/*
+ * Lebar konten diatur di satu tempat supaya semua halaman memakai lebar baca yang
+ * sama; halaman tidak lagi mengatur max-width sendiri.
+ */
+.app-layout__content {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
   .app-layout__main {
-    padding: var(--space-8) var(--space-6);
+    padding: var(--space-8) var(--space-6) var(--space-12);
   }
 }
 
 @media (max-width: 480px) {
   .app-layout__main {
-    padding: var(--space-4) var(--space-3);
+    padding: var(--space-4) var(--space-3) var(--space-8);
   }
 }

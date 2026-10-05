@@ -3,9 +3,9 @@
   flex-direction: column;
   gap: var(--space-1);
   width: var(--sidebar-width);
-  padding: var(--space-4) var(--space-3) var(--space-6);
+  padding: var(--space-5) var(--space-3) var(--space-8);
   background-color: var(--color-chrome-deep);
-  border-right: 1px solid var(--color-chrome-border);
+  border-right: var(--border-width) solid var(--color-chrome-border);
   overflow-y: auto;
 }
 
@@ -13,11 +13,19 @@
   outline-color: var(--color-focus-ring-on-chrome);
 }
 
+.sidebar__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+
 .sidebar__link {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  min-height: 38px;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   color: var(--color-text-on-chrome-muted);
@@ -29,17 +37,33 @@
 }
 
 .sidebar__link:hover {
-  background-color: rgb(255 255 255 / 8%);
+  background-color: var(--color-chrome-hover);
   color: var(--color-text-on-chrome);
   text-decoration: none;
 }
 
-/* Penanda aktif: bar emas + latar transparan, tanpa menggeser layout. */
+/* Penanda aktif: bar emas + permukaan terangkat, tanpa menggeser layout. */
 .sidebar__link--active {
-  background-color: rgb(255 255 255 / 10%);
+  background-color: var(--color-chrome-raised);
   color: var(--color-text-on-chrome);
   font-weight: var(--font-weight-semibold);
   box-shadow: inset var(--rule-accent-width) 0 0 var(--color-accent);
+}
+
+.sidebar__link-main {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.sidebar__link-main .icon {
+  color: var(--color-text-on-chrome-faint);
+}
+
+.sidebar__link--active .sidebar__link-main .icon,
+.sidebar__link:hover .sidebar__link-main .icon {
+  color: var(--color-accent-soft);
 }
 
 .sidebar__link-label {
@@ -49,8 +73,31 @@
   white-space: nowrap;
 }
 
+/* Titik status menggantikan badge panjang supaya navigasi tetap ringkas. */
+.sidebar__status {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.sidebar__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+}
+
+.sidebar__status--ready .sidebar__status-dot {
+  background-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgb(212 175 55 / 18%);
+}
+
+.sidebar__status--planned .sidebar__status-dot {
+  background-color: transparent;
+  border: var(--border-width) solid var(--color-text-on-chrome-faint);
+}
+
 .sidebar__divider {
-  height: 1px;
+  height: var(--border-width);
   margin: var(--space-4) var(--space-3);
   background-color: var(--color-chrome-border);
 }
@@ -65,31 +112,23 @@
 }
 
 .sidebar__group-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   padding: 0 var(--space-3);
   margin-bottom: var(--space-2);
-  color: #e0c37a;
+  color: var(--color-text-on-chrome-faint);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: var(--letter-spacing-wider);
+  letter-spacing: var(--tracking-wider);
   text-transform: uppercase;
 }
 
-.sidebar__list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-/* Badge di sidebar mengikuti permukaan gelap, bukan tema terang. */
-.sidebar .badge {
-  background-color: rgb(255 255 255 / 10%);
-  border-color: var(--color-chrome-border);
-  color: var(--color-text-on-chrome-muted);
-}
-
-.sidebar .badge--accent {
-  background-color: rgb(212 175 55 / 18%);
-  border-color: rgb(212 175 55 / 45%);
-  color: #f0d98a;
+/* Garis emas pendek sebelum tiap kategori: penavigasi cepat tanpa ikon. */
+.sidebar__group-label::before {
+  content: '';
+  width: 10px;
+  height: 1px;
+  background-color: var(--color-accent);
+  opacity: 0.7;
 }

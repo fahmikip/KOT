@@ -1,13 +1,17 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Alert } from '@/components/Alert'
 import { Badge } from '@/components/Badge'
-import { TOOL_STATUS, findToolByPath, type ToolDefinition } from '@/lib/routes'
+import { Card } from '@/components/Card'
+import { Icon } from '@/components/Icon'
+import { PageHeader } from '@/components/PageHeader'
+import { DASHBOARD_ROUTE, TOOL_GROUPS, TOOL_STATUS, findToolByPath } from '@/lib/routes'
+import type { ToolDefinition } from '@/lib/routes'
 import './ComingSoon.css'
 
 /**
  * Halaman placeholder yang jujur untuk tool yang belum diimplementasikan.
  *
- * Aturan (Phase 1 §14, §29):
+ * Aturan (ARCHITECTURE.md §4, §14):
  * - Tidak ada tombol aksi yang tidak melakukan apa pun.
  * - Tidak ada input file di halaman ini — tidak ada file yang diproses.
  * - Kemampuan yang ditampilkan berasal dari FEATURES.md, ditulis sebagai
@@ -32,40 +36,48 @@ interface ComingSoonBodyProps {
 
 function ComingSoonBody({ tool, title }: ComingSoonBodyProps) {
   const heading = tool ? tool.label : (title ?? 'Tool')
-  const status = tool?.status ?? TOOL_STATUS.COMING_SOON
+  const isReady = tool?.status === TOOL_STATUS.READY
+  const groupLabel = tool
+    ? (TOOL_GROUPS.find((group) => group.id === tool.group)?.label ?? 'Alat')
+    : 'Alat'
 
   return (
     <article className="coming-soon">
-      <p className="coming-soon__eyebrow">{tool?.group.replace('-', ' ') ?? 'alat'}</p>
-      <h1 className="coming-soon__title">{heading}</h1>
-      <p className="coming-soon__lead">{tool?.description ?? 'Halaman ini belum tersedia.'}</p>
+      <PageHeader
+        eyebrow={groupLabel}
+        title={heading}
+        description={tool?.description ?? 'Halaman ini belum tersedia.'}
+        aside={<Badge tone={isReady ? 'accent' : 'neutral'}>{isReady ? 'Siap digunakan' : 'Coming Soon'}</Badge>}
+      />
 
-      <div className="coming-soon__status">
-        <span className="coming-soon__status-label">Status:</span>
-        <Badge tone="info">{status === TOOL_STATUS.READY ? 'Siap digunakan' : 'Coming Soon'}</Badge>
-        <span className="coming-soon__status-value">{status}</span>
-      </div>
-
-      {status === TOOL_STATUS.COMING_SOON ? (
+      {!isReady ? (
         <Alert tone="info" title="Fitur ini belum tersedia pada versi saat ini.">
           <p>Tidak ada file yang diproses pada halaman ini.</p>
         </Alert>
       ) : null}
 
       {tool && tool.plannedCapabilities.length > 0 ? (
-        <section className="coming-soon__planned">
+        <Card as="section" className="coming-soon__planned">
           <h2 className="coming-soon__planned-title">Direncanakan untuk tool ini</h2>
           <ul className="coming-soon__planned-list">
             {tool.plannedCapabilities.map((capability) => (
-              <li key={capability}>{capability}</li>
+              <li key={capability} className="coming-soon__planned-item">
+                <span className="coming-soon__planned-mark" aria-hidden="true">
+                  <Icon name="check" size="sm" />
+                </span>
+                <span>{capability}</span>
+              </li>
             ))}
           </ul>
-        </section>
+        </Card>
       ) : null}
 
-      <Link className="coming-soon__back" to="/">
-        Kembali ke Dashboard
-      </Link>
+      <div className="coming-soon__actions">
+        <Link className="link-button" to={DASHBOARD_ROUTE}>
+          <Icon name="arrow-left" size="sm" />
+          <span>Kembali ke Dashboard</span>
+        </Link>
+      </div>
     </article>
   )
 }
