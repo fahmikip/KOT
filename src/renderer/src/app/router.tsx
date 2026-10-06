@@ -6,11 +6,14 @@ import { NotFound } from '@/pages/NotFound'
 import { ImageToolPage } from '@/features/image-tools/ImageToolPage'
 import { TOOLS, toRoutePath } from '@/lib/routes'
 
-/** Tool Image yang punya halaman nyata; sisanya masih Coming Soon. */
-const IMAGE_TOOL_OPERATIONS: Partial<Record<string, 'compress' | 'resize' | 'convert'>> = {
+/** Tool yang punya halaman nyata; sisanya masih Coming Soon. */
+
+type ImageOperation = 'compress' | 'resize' | 'convert' | 'toPdf'
+const IMAGE_TOOL_OPERATIONS: Partial<Record<string, ImageOperation>> = {
   'image-compress': 'compress',
   'image-resize': 'resize',
-  'image-convert': 'convert'
+  'image-convert': 'convert',
+  'image-to-pdf': 'toPdf'
 }
 
 /**

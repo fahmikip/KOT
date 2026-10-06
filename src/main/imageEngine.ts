@@ -1,12 +1,25 @@
 import { randomUUID } from 'node:crypto'
 import { basename, extname, join } from 'node:path'
-import { copyFile, open, readFile, stat, unlink } from 'node:fs/promises'
+import { copyFile, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import sharp, { type Metadata } from 'sharp'
+import { composePdf, isPdfPageSize, type PdfImageInput, type PdfPageSize } from './pdfEngine'
 
 export const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.webp'])
 export const IMAGE_TARGET_FORMATS = ['png', 'jpg', 'webp'] as const
 export const MAX_IMAGE_BYTES = 100 * 1024 * 1024
 export const MAX_BATCH_FILES = 100
+
+/**
+ * Batas total byte gambar yang boleh jadi satu PDF.
+ *
+ * pdf-lib menyusun dokumen di memori, jadi 100 file × 100 MB bisa menghabiskan
+ * RAM. 250 MB membuat PDF hasil yang masih realistis untuk diarsipkan, dan
+ * proses tidak bisa membuat aplikasi kehabisan memori tanpa jejak.
+ */
+export const MAX_PDF_INPUT_BYTES = 250 * 1024 * 1024
+
+/** Kualitas re-encode hanya untuk format yang tidak bisa di-embed apa adanya. */
+export const PDF_FALLBACK_QUALITY = 92
 
 export type ImageTargetFormat = (typeof IMAGE_TARGET_FORMATS)[number]
 export type ImageOperation = 'compress' | 'resize' | 'convert'
@@ -17,6 +30,8 @@ export type ResizeOptions =
 
 export const SKIP_SAME_FORMAT = 'Format file sudah sama dengan format tujuan.'
 export const SKIP_TRANSPARENCY = 'Gambar memiliki transparansi. Warna latar untuk konversi ke JPG belum ditentukan.'
+export const PDF_ALPHA_FLATTENED = 'Gambar transparan diletakkan di atas latar putih.'
+export const PDF_REENCODED = 'Format gambar tidak bisa di-embed ke PDF tanpa diubah.'
 
 const TARGET_EXTENSION: Record<ImageTargetFormat, string> = { png: '.png', jpg: '.jpg', webp: '.webp' }
 const TARGET_METADATA_FORMAT: Record<ImageTargetFormat, string> = { png: 'png', jpg: 'jpeg', webp: 'webp' }
@@ -47,6 +62,28 @@ export interface ImageProcessResult {
 }
 
 export interface ImageProgress { completed: number; total: number; currentFile: string; result?: ImageProcessResult }
+
+export interface PdfRequest {
+  files: Array<{ name: string; path: string; size: number }>
+  destination: string
+  pageSize: PdfPageSize
+}
+
+export interface PdfSkipped {
+  name: string
+  reason: string
+}
+
+export interface PdfProcessResult {
+  name: string
+  status: 'success' | 'failed'
+  outputPath?: string
+  pageCount: number
+  originalSize: number
+  outputSize?: number
+  notes: PdfSkipped[]
+  error?: string
+}
 
 export function isAllowedImagePath(path: string): boolean {
   return IMAGE_EXTENSIONS.has(extname(path).toLowerCase())
@@ -190,6 +227,159 @@ export async function processImage(request: ProcessRequest, onProgress: (progres
     onProgress({ completed: index + 1, total: request.files.length, currentFile: file.name, result })
   }
   return results
+}
+
+function pdfOutputName(name: string, suffix = ''): string {
+  const extension = extname(name)
+  const stem = basename(name, extension).replace(/[<>:"/\\|?*]/g, '_').replace(/[. ]+$/g, '') || 'image'
+  return `${stem}${suffix}.pdf`
+}
+
+/** Nama PDF mengikuti gambar pertama; benturan mendapat ` (2)`, ` (3)`, dst. */
+async function reservePdfPath(firstFileName: string, destination: string): Promise<string> {
+  for (let index = 0; index < 10000; index += 1) {
+    const candidate = join(destination, pdfOutputName(firstFileName, index === 0 ? '' : ` (${index + 1})`))
+    try {
+      const reservation = await open(candidate, 'wx')
+      await reservation.close()
+      return candidate
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST') continue
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return candidate
+      throw error
+    }
+  }
+  throw new Error('No available output name')
+}
+
+export interface PdfEmbedPlan {
+  format: 'jpeg' | 'png'
+  /** true berarti byte asli bisa dipakai tanpa rekompresi. */
+  lossless: boolean
+  notes: string[]
+}
+
+/**
+ * Rencanakan cara satu gambar masuk ke PDF.
+ *
+ * PDF tidak punya kanal alpha dan pdf-lib hanya menerima JPEG dan PNG, jadi PNG
+ * ber-transparansi dan WEBP harus di-flatten ke putih lalu di-encode ulang
+ * (DEC-035). JPEG dan PNG opak di-embed apa adanya supaya tidak ada kualitas
+ * yang hilang dan ukuran PDF tetap mendekati jumlah file asli.
+ */
+export function pdfEmbedPlan(metadata: Metadata): PdfEmbedPlan {
+  const transparent = metadata.hasAlpha === true
+  if (metadata.format === 'jpeg' && !transparent) return { format: 'jpeg', lossless: true, notes: [] }
+  if (metadata.format === 'png' && !transparent) return { format: 'png', lossless: true, notes: [] }
+  const notes = [PDF_REENCODED]
+  if (transparent) notes.push(PDF_ALPHA_FLATTENED)
+  return { format: 'jpeg', lossless: false, notes }
+}
+
+async function preparePdfImage(
+  file: PdfRequest['files'][number],
+  metadata: Metadata,
+  plan: PdfEmbedPlan
+): Promise<PdfImageInput> {
+  if (plan.lossless) {
+    return {
+      name: file.name,
+      bytes: await readFile(file.path),
+      width: metadata.width as number,
+      height: metadata.height as number,
+      format: plan.format
+    }
+  }
+  const flattened = await sharp(file.path, { limitInputPixels: 100_000_000, failOn: 'error' })
+    .flatten({ background: '#ffffff' })
+    .jpeg({ quality: PDF_FALLBACK_QUALITY })
+    .toBuffer()
+  return {
+    name: file.name,
+    bytes: new Uint8Array(flattened),
+    width: metadata.width as number,
+    height: metadata.height as number,
+    format: 'jpeg'
+  }
+}
+
+function mapPdfError(error: unknown): string {
+  const message = error instanceof Error ? error.message : ''
+  if (message.includes('total size')) return 'Total ukuran gambar melebihi batas 250 MB untuk satu PDF.'
+  if (message.includes('100 MB')) return 'Ukuran file melebihi batas 100 MB.'
+  if (message.includes('page size')) return 'Ukuran halaman tidak valid. Pilih A4, Letter, atau Ikuti gambar.'
+  if (message.includes('too large')) return 'Ukuran gambar terlalu besar untuk dijadikan halaman PDF.'
+  if (message.includes('format') || message.includes('Unsupported')) return 'Format file tidak didukung. Gunakan JPG, JPEG, PNG, atau WEBP.'
+  return 'PDF tidak dapat dibuat. Periksa jumlah gambar dan ruang penyimpanan, lalu coba lagi.'
+}
+
+/** Gabung semua gambar yang valid menjadi satu PDF; file asli tidak pernah disentuh. */
+export async function processImagesToPdf(
+  request: PdfRequest,
+  onProgress: (progress: Omit<ImageProgress, 'result'>) => void
+): Promise<PdfProcessResult> {
+  if (!Array.isArray(request.files) || request.files.length === 0 || request.files.length > MAX_BATCH_FILES) throw new Error('Select between 1 and 100 image files')
+  if (!isPdfPageSize(request.pageSize)) throw new Error('Unsupported PDF page size')
+  const totalSize = request.files.reduce((sum, file) => sum + (Number.isFinite(file.size) ? file.size : 0), 0)
+  if (totalSize > MAX_PDF_INPUT_BYTES) throw new Error('Exceeds the PDF total size limit')
+
+  const notes: PdfSkipped[] = []
+  const images: PdfImageInput[] = []
+  let embeddedBytes = 0
+
+  for (let index = 0; index < request.files.length; index += 1) {
+    const file = request.files[index]
+    onProgress({ completed: index, total: request.files.length, currentFile: file.name })
+    try {
+      const metadata = await validateImageFile(file)
+      const plan = pdfEmbedPlan(metadata)
+      const image = await preparePdfImage(file, metadata, plan)
+      for (const note of plan.notes) notes.push({ name: file.name, reason: note })
+      embeddedBytes += image.bytes.length
+      images.push(image)
+    } catch (error) {
+      console.error(`[image:toPdf] ${file.name}`, error)
+      notes.push({ name: file.name, reason: mapPdfError(error) })
+    }
+    onProgress({ completed: index + 1, total: request.files.length, currentFile: file.name })
+  }
+
+  if (!images.length) {
+    return {
+      name: pdfOutputName(request.files[0].name),
+      status: 'failed',
+      pageCount: 0,
+      originalSize: totalSize,
+      notes,
+      error: 'Tidak ada gambar yang bisa dimasukkan ke PDF. Pilih ulang gambar yang valid.'
+    }
+  }
+
+  try {
+    const composed = await composePdf(images, request.pageSize)
+    const outputPath = await reservePdfPath(request.files[0].name, request.destination)
+    await writeFile(outputPath, composed.bytes)
+    const outputStat = await stat(outputPath)
+    return {
+      name: basename(outputPath),
+      status: 'success',
+      outputPath,
+      pageCount: composed.pages.length,
+      originalSize: embeddedBytes,
+      outputSize: outputStat.size,
+      notes
+    }
+  } catch (error) {
+    console.error('[image:toPdf] compose', error)
+    return {
+      name: pdfOutputName(request.files[0].name),
+      status: 'failed',
+      pageCount: 0,
+      originalSize: totalSize,
+      notes,
+      error: mapPdfError(error)
+    }
+  }
 }
 
 export async function chooseDestination(paths: string[], folder: string): Promise<number> {

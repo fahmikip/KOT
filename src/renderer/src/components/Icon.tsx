@@ -18,6 +18,8 @@ export type IconName =
   | 'lock'
   | 'arrow-left'
   | 'arrow-right'
+  | 'arrow-up'
+  | 'arrow-down'
 
 /**
  * Bentuk ikon garis (stroke) dengan satu viewBox 24×24 supaya semua ikon sejajar.
@@ -98,7 +100,9 @@ const ICON_SHAPES: Record<IconName, ReactNode> = {
     </>
   ),
   'arrow-left': <path d="M19 12H5.5M11 6l-5.5 6 5.5 6" />,
-  'arrow-right': <path d="M5 12h13.5M13 6l5.5 6-5.5 6" />
+  'arrow-right': <path d="M5 12h13.5M13 6l5.5 6-5.5 6" />,
+  'arrow-up': <path d="M12 19V5.5M6 11.5L12 5.5l6 6" />,
+  'arrow-down': <path d="M12 5v13.5M6 12.5l6 6 6-6" />
 }
 
 export type IconSize = 'sm' | 'md' | 'lg'

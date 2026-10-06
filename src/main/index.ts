@@ -1,7 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { basename, join, resolve } from 'node:path'
 import { readdir, stat } from 'node:fs/promises'
-import { MAX_BATCH_FILES, isAllowedImagePath, processImage, validateImageFile, type ProcessRequest } from './imageEngine'
+import { MAX_BATCH_FILES, isAllowedImagePath, processImage, processImagesToPdf, validateImageFile, type PdfRequest, type ProcessRequest } from './imageEngine'
+import { isPdfPageSize } from './pdfEngine'
 
 const authorizedImages = new Map<number, Set<string>>()
 
@@ -87,6 +88,13 @@ function registerImageHandlers(): void {
     if (!Array.isArray(request.files) || request.files.length > MAX_BATCH_FILES || request.files.some((file) => !file || typeof file.path !== 'string' || !allowed.has(resolve(file.path))) || !request.destination || resolve(request.destination) !== authorizedDestinations.get(event.sender.id)) throw new Error('Unapproved image path or destination')
     const sender = event.sender
     return processImage(request, (progress) => { if (!sender.isDestroyed()) sender.send('image:progress', progress) })
+  })
+  ipcMain.handle('image:to-pdf', async (event, request: PdfRequest) => {
+    if (!request || !isPdfPageSize(request.pageSize)) throw new Error('Invalid PDF page size')
+    const allowed = authorizedImages.get(event.sender.id) ?? new Set<string>()
+    if (!Array.isArray(request.files) || request.files.length > MAX_BATCH_FILES || request.files.some((file) => !file || typeof file.path !== 'string' || !allowed.has(resolve(file.path))) || !request.destination || resolve(request.destination) !== authorizedDestinations.get(event.sender.id)) throw new Error('Unapproved image path or destination')
+    const sender = event.sender
+    return processImagesToPdf(request, (progress) => { if (!sender.isDestroyed()) sender.send('image:progress', progress) })
   })
 }
 

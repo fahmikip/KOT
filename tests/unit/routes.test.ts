@@ -44,8 +44,8 @@ describe('route registry', () => {
     expect(new Set(ids).size).toBe(ids.length)
   })
 
-  it('hanya mengaktifkan tiga Image Tools pada Phase 3', () => {
-    expect(TOOLS.filter((tool) => tool.status === 'ready').map((tool) => tool.id)).toEqual(['image-compress', 'image-resize', 'image-convert'])
+  it('hanya mengaktifkan tool yang benar-benar punya halaman (Phase 2-4)', () => {
+    expect(TOOLS.filter((tool) => tool.status === 'ready').map((tool) => tool.id)).toEqual(['image-compress', 'image-resize', 'image-convert', 'image-to-pdf'])
   })
 
   it('menghapus garis miring depan untuk path relatif di dalam layout', () => {

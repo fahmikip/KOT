@@ -37,6 +37,24 @@ export interface ImageInspection {
   error?: string
 }
 
+export type PdfPageSize = 'a4' | 'letter' | 'fit'
+
+export interface PdfSkipped {
+  name: string
+  reason: string
+}
+
+export interface PdfProcessResult {
+  name: string
+  status: 'success' | 'failed'
+  outputPath?: string
+  pageCount: number
+  originalSize: number
+  outputSize?: number
+  notes: PdfSkipped[]
+  error?: string
+}
+
 export interface ImageProgress {
   completed: number
   total: number
@@ -57,6 +75,11 @@ export interface ImageToolBridge {
     resize?: ImageResizeOptions
     convert?: { target: ImageTargetFormat }
   }): Promise<ImageProcessResult[]>
+  toPdf(request: {
+    files: ImageFileRef[]
+    destination: string
+    pageSize: PdfPageSize
+  }): Promise<PdfProcessResult>
   onProgress(callback: (progress: ImageProgress) => void): () => void
 }
 
@@ -66,6 +89,7 @@ const imageTools: ImageToolBridge = {
   chooseDestination: () => ipcRenderer.invoke('image:choose-destination') as Promise<string | null>,
   inspect: (files) => ipcRenderer.invoke('image:inspect', files) as Promise<ImageInspection[]>,
   process: (request) => ipcRenderer.invoke('image:process', request) as Promise<ImageProcessResult[]>,
+  toPdf: (request) => ipcRenderer.invoke('image:to-pdf', request) as Promise<PdfProcessResult>,
   onProgress: (callback) => {
     const listener = (_event: Electron.IpcRendererEvent, progress: ImageProgress): void => callback(progress)
     ipcRenderer.on('image:progress', listener)

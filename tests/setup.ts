@@ -13,6 +13,14 @@ const imageToolsMock = {
   chooseDestination: vi.fn().mockResolvedValue(null),
   inspect: vi.fn().mockResolvedValue([]),
   process: vi.fn().mockResolvedValue([]),
+  toPdf: vi.fn().mockResolvedValue({
+    name: 'hasil.pdf',
+    status: 'success',
+    pageCount: 1,
+    originalSize: 100,
+    outputSize: 80,
+    notes: []
+  }),
   onProgress: vi.fn().mockReturnValue(() => {})
 }
 

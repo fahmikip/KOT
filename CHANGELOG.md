@@ -242,3 +242,30 @@ baru di luar token, tidak ada gradient, tidak ada dependency baru.
 - Alur lima langkah dijalankan sampai halaman hasil pada Compressor, Resizer, dan Converter
   memakai bridge preload palsu.
 - `npm run verify` hijau: lint, typecheck, 9 file test / 109 test, build.
+
+## Phase 4 — Image → PDF (READY)
+
+- **Image → PDF selesai diimplementasikan** pada `/convert/image-to-pdf` dengan keputusan
+  DEC-015 dan DEC-035. Pemilihan ukuran halaman **wajib tiap kali** (A4, Letter, atau
+  "Ikuti gambar"); tidak ada default diam-diam.
+- **Library:** `pdf-lib` v1.17.1 (MIT), murni JS tanpa native build.
+- **Susunan halaman:** orientasi per gambar mengikuti sisi terpanjang (landscape bila
+  lebar > tinggi), margin 0, fit dengan menjaga rasio aspek, dipusatkan. Mode "Ikuti gambar"
+  berarti `1 px = 1 pt`.
+- **Transparansi & WEBP:** PNG ber-transparansi dan file WEBP di-flatten ke latar putih
+  `#ffffff` lalu di-encode ulang sebagai JPEG (`PDF_FALLBACK_QUALITY = 92`) dengan catatan
+  tertulis di pratinjau. JPEG dan PNG opak di-embed apa adanya (tidak direkompresi) untuk
+  menjaga kualitas.
+- **UI:** daftar gambar bisa di-reorder (naik/turun), indikator nomor halaman, peringatan
+  jumlah gambar yang perlu di-flatten, contoh nama PDF, dan validasi ukuran halaman wajib
+  dipilih sebelum proses.
+- **Engine:** `src/main/pdfEngine.ts` baru (resolvePageBox, fitWithinPage, composePdf,
+  validasi ukuran halaman max 14.400 pt). `src/main/imageEngine.ts` ditambah `processImagesToPdf`
+  dengan batas total 250 MB untuk 100 file, penamaan dengan konflik ` (n)`, dan pengumpulan
+  catatan per file (flatten/re-encode).
+- **IPC:** `image:toPdf` di main, diekspos di preload dan `Window.imageTools.toPdf` di
+  globals; `ImageToolPage` mendapat cabang operasi `toPdf`.
+- **Routes:** `/convert/image-to-pdf` diubah dari `COMING_SOON` menjadi `READY`; router
+  mengarahkan ke `ImageToolPage` dengan operation `toPdf`. Test `routes.test.ts` diperbarui.
+- **Tests:** `tests/unit/pdf-engine.test.ts` baru (11 test). Total test 109 → 120, semua
+  lulus; lint, typecheck (node & web), dan build hijau.

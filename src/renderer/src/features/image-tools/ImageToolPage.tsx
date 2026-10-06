@@ -6,7 +6,7 @@ import { Icon } from '@/components/Icon'
 import { PageHeader } from '@/components/PageHeader'
 import './ImageToolPage.css'
 
-type Operation = 'compress' | 'resize' | 'convert'
+type Operation = 'compress' | 'resize' | 'convert' | 'toPdf'
 type ResizeMode = 'width' | 'height' | 'percentage'
 
 interface SelectedFile extends ImageFileRef {
@@ -25,14 +25,37 @@ interface ImageToolPageProps {
 const TITLES: Record<Operation, string> = {
   compress: 'Kompres Gambar',
   resize: 'Ubah Ukuran Gambar',
-  convert: 'Konversi Gambar'
+  convert: 'Konversi Gambar',
+  toPdf: 'Gambar ke PDF'
 }
 
 const PROCESS_LABELS: Record<Operation, string> = {
   compress: 'Kompres',
   resize: 'Ubah ukuran',
-  convert: 'Konversi'
+  convert: 'Konversi',
+  toPdf: 'Buat PDF'
 }
+
+const EYEBROWS: Record<Operation, string> = {
+  compress: 'Image Tools',
+  resize: 'Image Tools',
+  convert: 'Image Tools',
+  toPdf: 'Convert'
+}
+
+const DESCRIPTIONS: Record<Operation, string> = {
+  compress: 'Semua gambar diproses secara lokal di perangkat ini. File asli tidak diubah.',
+  resize: 'Semua gambar diproses secara lokal di perangkat ini. File asli tidak diubah.',
+  convert: 'Semua gambar diproses secara lokal di perangkat ini. File asli tidak diubah.',
+  toPdf:
+    'Semua gambar digabung menjadi satu PDF secara lokal di perangkat ini. File asli tidak diubah.'
+}
+
+const PAGE_SIZE_OPTIONS: Array<{ value: PdfPageSize; label: string; hint: string }> = [
+  { value: 'a4', label: 'A4', hint: '210 × 297 mm, standar dokumen Indonesia' },
+  { value: 'letter', label: 'Letter', hint: '215,9 × 279,4 mm' },
+  { value: 'fit', label: 'Ikuti gambar', hint: 'Halaman sebesar gambar, 1 px = 1 pt' }
+]
 
 const TARGET_OPTIONS: Array<{ value: ImageTargetFormat; label: string; hint: string }> = [
   { value: 'png', label: 'PNG', hint: 'Lossless, mendukung transparansi' },
@@ -77,9 +100,11 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
   const [mode, setMode] = useState<ResizeMode>('width')
   const [value, setValue] = useState('')
   const [target, setTarget] = useState<ImageTargetFormat>('png')
+  const [pageSize, setPageSize] = useState<PdfPageSize | ''>('')
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState<ImageProgress | null>(null)
   const [results, setResults] = useState<ImageProcessResult[]>([])
+  const [pdfResult, setPdfResult] = useState<PdfProcessResult | null>(null)
   const [message, setMessage] = useState<{ tone: 'danger' | 'success' | 'info'; text: string } | null>(
     null
   )
@@ -131,6 +156,7 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
     setBusy(true)
     setMessage(null)
     setResults([])
+    setPdfResult(null)
     try {
       const inspected = await window.imageTools.inspect(selected)
       setFiles((previous) => {
@@ -196,10 +222,11 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
   }
 
   const run = async (): Promise<void> => {
-    if (!validFiles.length || resizeInvalid) return
+    if (!validFiles.length || resizeInvalid || pageSizeMissing) return
 
     setBusy(true)
     setResults([])
+    setPdfResult(null)
     setProgress({
       completed: 0,
       total: validFiles.length,
@@ -217,6 +244,25 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
           return
         }
         setDestination(outputFolder)
+      }
+
+      if (operation === 'toPdf') {
+        const pdf = await window.imageTools.toPdf({
+          files: validFiles,
+          destination: outputFolder,
+          pageSize: pageSize as PdfPageSize
+        })
+        setPdfResult(pdf)
+        setResults([])
+        setMessage(
+          pdf.status === 'success'
+            ? {
+                tone: 'success',
+                text: `PDF selesai: ${pdf.pageCount} halaman dari ${validFiles.length} gambar. File asli tetap aman.`
+              }
+            : { tone: 'danger', text: pdf.error ?? 'PDF tidak dapat dibuat.' }
+        )
+        return
       }
 
       const resize: ImageResizeOptions | undefined =
@@ -280,19 +326,47 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
     return formatDimensions(Math.round((source.width * resizeValue) / source.height), resizeValue)
   }, [invalidWidthOrHeight, mode, operation, resizeInvalid, resizeValue, validFiles, value])
 
+  const move = (index: number, offset: number): void => {
+    setFiles((previous) => {
+      const nextIndex = index + offset
+      if (nextIndex < 0 || nextIndex >= previous.length) return previous
+      const next = [...previous]
+      const [entry] = next.splice(index, 1)
+      next.splice(nextIndex, 0, entry)
+      return next
+    })
+  }
+
+  const pageSizeMissing = operation === 'toPdf' && pageSize === ''
+  const flattenCount =
+    operation === 'toPdf' ? validFiles.filter((file) => file.hasAlpha || file.format === 'webp').length : 0
+
+  const examplePdfName = useMemo(() => {
+    const first = validFiles[0]?.name
+    if (!first) return '—'
+    const stem = first.replace(/\.[^.]+$/, '').replace(/[<>:"/\\|?*]/g, '_') || 'image'
+    return `${stem}.pdf`
+  }, [validFiles])
+
   const progressPercent =
     progress && progress.total > 0
       ? Math.min(100, Math.round((progress.completed / progress.total) * 100))
       : 0
 
-  const canRun = !busy && validFiles.length > 0 && !resizeInvalid && !invalidWidthOrHeight && !targetUnavailable
+  const canRun =
+    !busy &&
+    validFiles.length > 0 &&
+    !resizeInvalid &&
+    !invalidWidthOrHeight &&
+    !targetUnavailable &&
+    !pageSizeMissing
 
   return (
     <article className="tool">
       <PageHeader
-        eyebrow="Image Tools"
+        eyebrow={EYEBROWS[operation]}
         title={TITLES[operation]}
-        description="Semua gambar diproses secara lokal di perangkat ini. File asli tidak diubah."
+        description={DESCRIPTIONS[operation]}
         aside={
           <span className="tool__local">
             <Icon name="lock" size="sm" />
@@ -410,6 +484,40 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
               </div>
             ) : null}
 
+            {operation === 'toPdf' ? (
+              <div className="tool__control tool__control--wide">
+                <span className="tool__label" id="page-size-label">
+                  Ukuran halaman
+                </span>
+                <div className="tool__formats" role="radiogroup" aria-labelledby="page-size-label">
+                  {PAGE_SIZE_OPTIONS.map((option) => (
+                    <label key={option.value} className="tool__format">
+                      <input
+                        type="radio"
+                        name="pdf-page-size"
+                        value={option.value}
+                        checked={pageSize === option.value}
+                        disabled={busy}
+                        onChange={() => setPageSize(option.value)}
+                      />
+                      <strong>{option.label}</strong>
+                      <small>{option.hint}</small>
+                    </label>
+                  ))}
+                </div>
+                <p className="tool__note">
+                  Wajib dipilih setiap kali; tidak ada ukuran bawaan. Orientasi halaman mengikuti
+                  gambar, dan gambar tidak diperbesar atau dikecilkan.
+                </p>
+                {flattenCount > 0 ? (
+                  <p className="tool__note">
+                    {flattenCount} gambar perlu diubah lebih dulu: PDF tidak mendukung transparansi
+                    dan tidak menerima WEBP, jadi warnanya diletakkan di atas putih.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
             {operation === 'resize' ? (
               <div className="tool__control">
                 <div className="tool__resize-options">
@@ -465,10 +573,14 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
           </div>
           <div className="step__body">
             <ul className="file-list">
-              {files.map((file) => (
+              {files.map((file, index) => (
                 <li key={file.path} className="file-row">
                   <span className="file-row__icon" aria-hidden="true">
-                    <Icon name="image" size="sm" />
+                    {operation === 'toPdf' ? (
+                      <span className="file-row__page">{index + 1}</span>
+                    ) : (
+                      <Icon name="image" size="sm" />
+                    )}
                   </span>
                   <div className="file-row__body">
                     <strong className="file-row__name">{file.name}</strong>
@@ -476,16 +588,53 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
                       {file.valid
                         ? `${formatDimensions(file.width, file.height)} · ${formatSize(file.size)} · ${file.format?.toUpperCase()}${
                             operation === 'convert' && file.hasAlpha ? ' · ada transparansi' : ''
+                          }${
+                            operation === 'toPdf' &&
+                            (file.hasAlpha || file.format === 'webp')
+                              ? ' · diubah ke JPEG di atas putih'
+                              : ''
                           }`
                         : file.error}
                     </span>
                   </div>
+                  {operation === 'toPdf' ? (
+                    <span className="file-row__order">
+                      <button
+                        type="button"
+                        className="icon-button"
+                        aria-label={`Naikkan ${file.name} satu halaman`}
+                        disabled={busy || index === 0}
+                        onClick={() => move(index, -1)}
+                      >
+                        <Icon name="arrow-up" size="sm" />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-button"
+                        aria-label={`Turunkan ${file.name} satu halaman`}
+                        disabled={busy || index === files.length - 1}
+                        onClick={() => move(index, 1)}
+                      >
+                        <Icon name="arrow-down" size="sm" />
+                      </button>
+                    </span>
+                  ) : null}
                   <span className={file.valid ? 'status status--ready' : 'status status--danger'}>
                     {file.valid ? 'Siap' : 'Gagal validasi'}
                   </span>
                 </li>
               ))}
             </ul>
+
+            {operation === 'toPdf' ? (
+              <p className="tool__output-hint">
+                <Icon name="info" size="sm" />
+                <span>
+                  {validFiles.length} halaman, urutan mengikuti daftar di atas. Contoh nama keluaran:{' '}
+                  {examplePdfName}
+                </span>
+              </p>
+            ) : null}
 
             {outputDimensions ? (
               <p className="tool__output-hint">
@@ -532,6 +681,10 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
               <Alert tone="warning" title="Pilih format tujuan yang berbeda dari format gambar." />
             ) : null}
 
+            {pageSizeMissing ? (
+              <Alert tone="warning" title="Pilih ukuran halaman dulu: A4, Letter, atau Ikuti gambar." />
+            ) : null}
+
             {progress ? (
               <div className="progress" role="status" aria-live="polite">
                 <p className="progress__label">
@@ -546,7 +699,54 @@ export function ImageToolPage({ operation }: ImageToolPageProps) {
         </section>
       ) : null}
 
-      {results.length > 0 ? (
+      {pdfResult ? (
+        <section className="step" aria-labelledby="result-heading">
+          <div className="step__head">
+            <h2 className="step__title" id="result-heading">
+              5. Hasil
+            </h2>
+            <p className="step__hint">
+              Satu PDF berisi {pdfResult.pageCount} halaman, disimpan di folder hasil yang dipilih.
+            </p>
+          </div>
+          <div className="step__body">
+            <ul className="file-list">
+              <li className="file-row file-row--result">
+                <span className="file-row__icon" aria-hidden="true">
+                  <Icon name="document" size="sm" />
+                </span>
+                <div className="file-row__body">
+                  <strong className="file-row__name">{pdfResult.name}</strong>
+                  <span className="file-row__meta">
+                    {pdfResult.status === 'success'
+                      ? `${pdfResult.pageCount} halaman · ${formatSize(pdfResult.originalSize)} → ${formatSize(pdfResult.outputSize ?? 0)}`
+                      : pdfResult.error}
+                  </span>
+                </div>
+                <span
+                  className={
+                    pdfResult.status === 'success' ? 'status status--ready' : 'status status--danger'
+                  }
+                >
+                  {pdfResult.status === 'success' ? 'PDF dibuat' : 'Gagal'}
+                </span>
+              </li>
+            </ul>
+
+            {pdfResult.notes.length > 0 ? (
+              <Alert
+                tone="info"
+                title={`${pdfResult.notes.length} catatan: ${pdfResult.notes
+                  .slice(0, 2)
+                  .map((note) => note.reason)
+                  .join(' ')}${pdfResult.notes.length > 2 ? ' Dan lain-lain.' : ''}`}
+              />
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      {!pdfResult && results.length > 0 ? (
         <section className="step" aria-labelledby="result-heading">
           <div className="step__head">
             <h2 className="step__title" id="result-heading">

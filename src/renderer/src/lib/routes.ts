@@ -124,8 +124,8 @@ export const TOOLS: readonly ToolDefinition[] = [
     path: '/convert/image-to-pdf',
     group: 'conversion',
     description: 'Menggabungkan beberapa gambar menjadi satu PDF.',
-    plannedCapabilities: ['Banyak gambar', 'Reorder', 'Page size', 'Orientasi', 'Margin'],
-    status: TOOL_STATUS.COMING_SOON
+    plannedCapabilities: ['Banyak gambar', 'Reorder halaman', 'A4 / Letter / Ikuti gambar', 'Orientasi per gambar', 'Tanpa margin'],
+    status: TOOL_STATUS.READY
   },
   {
     id: 'pdf-to-image',
